@@ -51,7 +51,9 @@ checksum = "5f0e0fee31ef5ed1ba1316088939cea399010ed7731dba877ed44aeb407a75ea"
 name = "appdemo"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "once_cell",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

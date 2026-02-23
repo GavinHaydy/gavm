@@ -1,20 +1,16 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// main.rs
+// Entry point of Tauri application
 
-mod pyvm;
-use tauri_plugin_store::Builder;
+mod commands;
+mod core;
+
+use commands::*;
 
 fn main() {
     tauri::Builder::default()
-        .plugin(Builder::default().build()) // tauriStorePlugin 
         .invoke_handler(tauri::generate_handler![
-            pyvm::list_installed,
-            pyvm::list_available,
-            pyvm::install,
-            pyvm::use_version,
-            // pyvm::current_version
+            list_versions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-    appdemo_lib::run()
 }
