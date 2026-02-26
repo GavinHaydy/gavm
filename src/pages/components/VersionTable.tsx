@@ -9,9 +9,13 @@ export interface VersionItem {
   install_status: boolean;
   use_status: boolean;
 }
+export interface VersionResult {
+  total: number;
+  list: VersionItem[];
+}
 
 interface VersionTableProps {
-  data: VersionItem[];
+  data: VersionResult;
   loading?: boolean;
 
   onSearch?: (value: string) => void;
@@ -69,10 +73,15 @@ export const VersionTable: React.FC<VersionTableProps> = ({
 
       <Table
         size="small"
-        dataSource={data}
+        dataSource={data.list}
         columns={columns}
         rowKey={record => record.version}
         loading={loading}
+        pagination={{
+          total: data.total,
+          current: 1,
+          pageSize: 10,
+        }}
       />
     </>
   );

@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { VersionTable, VersionItem } from '@/pages/components/VersionTable';
+import { VersionTable, VersionItem, VersionResult } from '@/pages/components/VersionTable';
 import { safeInvoke } from '@/api/tauri';
 
 export const PythonPage = () => {
-  const [data, setData] = useState<VersionItem[]>([]);
+  const [data, setData] = useState<VersionResult>({
+    total: 0,
+    list: [],
+  });
 
   useEffect(() => {
     load();
   }, []);
 
   const load = async () => {
-    const result = await safeInvoke<VersionItem[]>('list_versions', {
+    const result = await safeInvoke<VersionResult>('list_versions', {
       language: 'python',
+      page: 0,
+      pageSize: 10,
     });
-
+    console.log(result.total);
     setData(result);
   };
 
