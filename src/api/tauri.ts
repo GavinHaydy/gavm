@@ -1,6 +1,7 @@
 import * as tauriCore from '@tauri-apps/api/core';
 
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+const isTauri = navigator.userAgent.includes("lvm")
+console.log(typeof window,window,isTauri)
 
 /**
  * 安全 invoke
