@@ -1,28 +1,35 @@
 // src/core/utils/config.rs
 use std::path::PathBuf;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 
+/// 获取用户 base_path
 pub fn get_base_path(app: &AppHandle) -> PathBuf {
-    let mut path_str = String::from("d:\\lvm");
+    // 1️⃣ 默认路径（跨平台）
+    let default_path = dirs::home_dir()
+        .expect("cannot get home dir")
+        .join(".lvm"); // 默认 ~/.lvm / C:\Users\xxx\.lvm
 
-    // 尝试获取已经加载的 store 或创建一个新的
-    // 注意：这里的 ".settings.json" 路径需要转换成 PathBuf
-    let settings_path = PathBuf::from(".settings.json");
+    // 2️⃣ config / settings.json 文件
+    // Tauri store 会在这个路径生成
+    let settings_path = app
+        .path()
+        .app_data_dir()
+        .unwrap_or(default_path.clone())
+        .join("settings.json");
 
-    // 使用 get_store 获取引用
+    // 3️⃣ 尝试读取 store
     if let Some(store) = app.get_store(settings_path) {
-        // store 默认被内部互斥锁保护，我们需要锁定它来读取
         if let Some(v) = store.get("base_path") {
             if let Some(s) = v.as_str() {
-                path_str = s.to_string();
+                return PathBuf::from(s); // 用户自定义路径优先
             }
         }
     }
 
-    PathBuf::from(path_str)
+    // 4️⃣ fallback 到默认路径
+    default_path
 }
-
 pub fn get_download_path(app: &AppHandle) -> PathBuf {
     let base = get_base_path(app);
     let download_dir = base.join("download");
