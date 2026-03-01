@@ -31,3 +31,4 @@ regex = "1"
 futures-util = "0.3"
 dirs = "6.0.0"
 shim = { path = "../shim"}
+zip = "8.1.0"
