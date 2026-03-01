@@ -35,3 +35,10 @@ src-tauri/
     │       ├── semver.rs
     │       └── path.rs
 ```
+
+### dev & build
+```shell
+bun run dev
+cargo build -p shim
+cargo tauri dev
+```
