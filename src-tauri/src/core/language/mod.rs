@@ -15,6 +15,7 @@ pub trait LanguageInstaller {
         &self,
         window: tauri::Window<Wry>,
         version: &str,
+        base_dir: &str,
         save_path: &str,
     ) -> Result<(), String>;
     fn get_download_url(&self, version: &str) -> Result<String, String>;
