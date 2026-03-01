@@ -1,6 +1,6 @@
 // src/core/utils/config.rs
 use std::path::PathBuf;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 use tauri_plugin_store::StoreExt;
 
 pub fn get_base_path(app: &AppHandle) -> PathBuf {

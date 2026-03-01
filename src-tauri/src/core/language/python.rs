@@ -1,14 +1,14 @@
 // python.rs
 // Python installer implementation
 
-use regex::Regex;
+use crate::core::language::LanguageInstaller;
+use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
+use regex::Regex;
 use reqwest;
 use std::env;
 use std::path::PathBuf;
-use tauri::{Wry};
-use crate::core::utils::semver::sort_versions_desc;
-use crate::core::language::LanguageInstaller;
+use tauri::Wry;
 
 pub struct PythonInstaller;
 
@@ -16,7 +16,7 @@ impl PythonInstaller {
     pub fn new() -> Self {
         Self
     }
-    
+
     // Get current platform identifier
     #[allow(dead_code)]
     fn get_platform(&self) -> String {
@@ -37,7 +37,7 @@ impl PythonInstaller {
             "unknown".to_string()
         }
     }
-    
+
     // Get architecture identifier
     #[allow(dead_code)]
     fn get_arch(&self) -> String {
@@ -54,14 +54,14 @@ impl PythonInstaller {
             "unknown".to_string()
         }
     }
-    
+
     // Get base directory for installations
     fn get_base_dir(&self) -> PathBuf {
         // Check if custom directory is set in environment variable
         if let Ok(custom_dir) = env::var("LVM_BASE_DIR") {
             return PathBuf::from(custom_dir);
         }
-        
+
         // Default path based on platform
         #[cfg(target_os = "windows")]
         {
@@ -69,7 +69,9 @@ impl PythonInstaller {
         }
         #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
-            env::home_dir().unwrap_or_else(|| env::current_dir().unwrap()).join(".lvm")
+            env::home_dir()
+                .unwrap_or_else(|| env::current_dir().unwrap())
+                .join(".lvm")
         }
         #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
         {
@@ -80,7 +82,6 @@ impl PythonInstaller {
 
 #[async_trait]
 impl LanguageInstaller for PythonInstaller {
-
     async fn list_versions(&self) -> Result<Vec<String>, String> {
         // Fetch version numbers from official Python FTP server
         let url = "https://www.python.org/ftp/python/";
@@ -93,8 +94,7 @@ impl LanguageInstaller for PythonInstaller {
             .map_err(|e| e.to_string())?;
 
         // Regex to match Python version directories (e.g., 3.10.0)
-        let re = Regex::new(r#"href="(\d+\.\d+\.\d+)/""#)
-            .map_err(|e| e.to_string())?;
+        let re = Regex::new(r#"href="(\d+\.\d+\.\d+)/""#).map_err(|e| e.to_string())?;
 
         let mut versions = Vec::new();
 
@@ -114,8 +114,7 @@ impl LanguageInstaller for PythonInstaller {
 
     async fn list_installed(&self) -> Result<Vec<String>, String> {
         let mut result = Vec::new();
-        let dir = self.get_base_dir()
-            .join("python");
+        let dir = self.get_base_dir().join("python");
 
         if dir.exists() {
             for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
@@ -132,13 +131,10 @@ impl LanguageInstaller for PythonInstaller {
     }
 
     async fn current(&self) -> Result<Option<String>, String> {
-        let path = self.get_base_dir()
-            .join("python")
-            .join("current_version");
+        let path = self.get_base_dir().join("python").join("current_version");
 
         if path.exists() {
-            let v = std::fs::read_to_string(path)
-                .map_err(|e| e.to_string())?;
+            let v = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
             return Ok(Some(v));
         }
 
@@ -152,11 +148,19 @@ impl LanguageInstaller for PythonInstaller {
         let url = match platform.as_str() {
             "windows" => {
                 let arch_suffix = if arch == "x86_64" { "amd64" } else { "win32" };
-                format!("https://www.python.org/ftp/python/{}/python-{}-embed-{}.zip",
-                        version, version, arch_suffix)
-            },
-            "macos" => format!("https://www.python.org/ftp/python/{}/python-{}-macosx11.0.pkg", version, version),
-            "linux" => format!("https://www.python.org/ftp/python/{}/Python-{}.tgz", version, version),
+                format!(
+                    "https://www.python.org/ftp/python/{}/python-{}-embed-{}.zip",
+                    version, version, arch_suffix
+                )
+            }
+            "macos" => format!(
+                "https://www.python.org/ftp/python/{}/python-{}-macosx11.0.pkg",
+                version, version
+            ),
+            "linux" => format!(
+                "https://www.python.org/ftp/python/{}/Python-{}.tgz",
+                version, version
+            ),
             _ => return Err("Unsupported platform".into()),
         };
         Ok(url)
@@ -166,7 +170,7 @@ impl LanguageInstaller for PythonInstaller {
         &self,
         window: tauri::Window<Wry>,
         version: &str,
-        save_path: &str
+        save_path: &str,
     ) -> Result<(), String> {
         // 1. 获取 URL
         let url = self.get_download_url(version)?;
@@ -180,8 +184,9 @@ impl LanguageInstaller for PythonInstaller {
             window,
             version,
             &url,
-            dest_path.clone()
-        ).await?;
+            dest_path.clone(),
+        )
+        .await?;
 
         // 4. 下载完成后，继续执行解压逻辑...
         // self.extract(&dest_path, ...).await?;

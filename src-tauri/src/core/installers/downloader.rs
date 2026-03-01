@@ -1,10 +1,10 @@
 use futures_util::StreamExt;
+use serde::Serialize;
 use std::path::PathBuf;
+use tauri::Window;
+use tauri::{Emitter, Wry};
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
-use tauri::{Emitter, Wry};
-use tauri::{Window};
-use serde::Serialize;
 
 #[derive(Clone, Serialize)]
 pub struct ProgressPayload {
@@ -40,12 +40,17 @@ impl Downloader {
 
             // 优化：进度每变化 1% 才发送一次事件，减轻前端渲染压力
             if (percentage - last_emit_percent).abs() >= 1.0 || percentage >= 100.0 {
-                window.emit("download-progress", ProgressPayload {
-                    version: version.to_string(),
-                    current: downloaded,
-                    total: total_size,
-                    percentage,
-                }).unwrap();
+                window
+                    .emit(
+                        "download-progress",
+                        ProgressPayload {
+                            version: version.to_string(),
+                            current: downloaded,
+                            total: total_size,
+                            percentage,
+                        },
+                    )
+                    .unwrap();
                 last_emit_percent = percentage;
             }
         }

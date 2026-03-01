@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "appdemo",
+  "productName": "LVM",
   "version": "0.1.0",
-  "identifier": "com.gavinhaydy.appdemo",
+  "identifier": "com.gavinhaydy.lvm",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "userAgent": "lvm",
-        "title": "appdemo",
+        "title": "LVM",
         "width": 800,
         "height": 600
       }

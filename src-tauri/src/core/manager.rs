@@ -1,8 +1,8 @@
 // manager.rs
 // Language manager responsible for orchestration
 
-use crate::core::language::{LanguageInstaller, python::PythonInstaller};
-use crate::core::dto::{VersionInfo, PageResult};
+use crate::core::dto::{PageResult, VersionInfo};
+use crate::core::language::{python::PythonInstaller, LanguageInstaller};
 use tauri::{Window, Wry};
 
 pub struct LanguageManager {
@@ -23,9 +23,8 @@ impl LanguageManager {
         &self,
         page: usize,
         page_size: usize,
-        key_word: Option<&str>
+        key_word: Option<&str>,
     ) -> Result<PageResult, String> {
-
         let all_versions = self.installer.list_versions().await?;
         let installed = self.installer.list_installed().await?;
         let current = self.installer.current().await?;
@@ -55,28 +54,27 @@ impl LanguageManager {
             &[]
         };
 
-        let list = slice.iter().map(|v| {
-            VersionInfo {
+        let list = slice
+            .iter()
+            .map(|v| VersionInfo {
                 version: v.clone(),
                 install_status: installed.contains(v),
                 use_status: current.as_ref() == Some(v),
-            }
-        }).collect();
+            })
+            .collect();
 
         Ok(PageResult { total, list })
     }
-
 
     pub async fn install(
         &self,
         window: Window<Wry>,
         version: String,
-        save_path: String
+        save_path: String,
     ) -> Result<(), String> {
         // 1. 调用具体语言的安装逻辑
         self.installer.install(window, &version, &save_path).await
     }
-
 
     #[allow(dead_code)]
     pub async fn get_download_url(&self, version: &str) -> Result<String, String> {

@@ -1,8 +1,6 @@
 // main.rs
 // Entry point of Tauri application
 
-
-
 fn main() {
-    appdemo_lib::run()
+    lvm_lib::run()
 }

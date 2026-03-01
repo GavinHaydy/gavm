@@ -200,7 +200,7 @@ bun run tauri --help
   - 自闭合标签: 尽可能使用自闭合(如 `<Component />`)
 
 #### Rust
-- **格式化工具**: rustfmt(默认配置)
+- **格式化工具**: cargo fmt(默认配置)
 - **Linter**: clippy
 - **关键约定**:
   - 使用 `async/await` 进行异步操作
@@ -520,8 +520,8 @@ A: 检查:
 - 忽略监视: `src-tauri` 目录
 
 ### Tauri 配置 (`tauri.conf.json`)
-- 产品名称: appdemo
-- 标识符: com.gavinhaydy.appdemo
+- 产品名称: lvm
+- 标识符: com.gavinhaydy.lvm
 - 窗口大小: 800x600
 - 用户代理: lvm
 - 开发命令前: `bun run dev`
