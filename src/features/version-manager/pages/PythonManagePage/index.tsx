@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { safeInvoke } from '@/api/tauri';
-import { ISearchPayload } from '@/core/types/common.ts';
+import { CommandEnum, InstallStatusEnum, LanguageEnum } from '@/core/constants/enum';
+import { SearchPayload } from '@/core/types/common.ts';
 import { VersionTable, VersionItem, VersionResult } from '@/shared/components/VersionTable';
 
 export const PythonManagePage = () => {
-  const [searchPayload, setPayload] = useState<ISearchPayload>({
-    language: 'python',
+  const [searchPayload, setSearchPayload] = useState<SearchPayload>({
+    language: LanguageEnum.PYTHON,
     page: 0,
     pageSize: 10,
     keyWord: '',
@@ -17,7 +18,7 @@ export const PythonManagePage = () => {
   });
 
   const getList = useCallback(async () => {
-    const result = await safeInvoke<VersionResult>('list_versions', searchPayload);
+    const result = await safeInvoke<VersionResult>(CommandEnum.LIST_VERSIONS, searchPayload);
     setData(result);
   }, [searchPayload]);
 
@@ -26,28 +27,25 @@ export const PythonManagePage = () => {
   }, [getList]);
 
   const handleSearch = async (keyWord: string) => {
-    setPayload(prevState => ({ ...prevState, keyWord: keyWord }));
+    setSearchPayload(prevState => ({ ...prevState, keyWord: keyWord }));
   };
 
   const handleInstallToggle = async (record: VersionItem) => {
-    if (!record.install_status) {
-      await safeInvoke('install', {
-        language: 'python',
-        version: record.version,
-      });
-    } else {
-      await safeInvoke('uninstall', {
-        language: 'python',
-        version: record.version,
-      });
-    }
+    const command = record.install_status
+      ? InstallStatusEnum.UNINSTALLED
+      : InstallStatusEnum.INSTALLED;
+
+    await safeInvoke(command, {
+      language: LanguageEnum.PYTHON,
+      version: record.version,
+    });
 
     await getList();
   };
 
   const handleUseToggle = async (record: VersionItem) => {
-    await safeInvoke('use_version', {
-      language: 'python',
+    await safeInvoke(CommandEnum.USE_VERSION, {
+      language: LanguageEnum.PYTHON,
       version: record.version,
     });
 

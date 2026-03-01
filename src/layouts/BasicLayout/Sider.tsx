@@ -1,7 +1,8 @@
 // src/layouts/BasicLayout/Sider.tsx
 import { SettingTwoTone } from '@ant-design/icons';
-import { Menu, Button, Select } from 'antd';
+import { Menu, Button, Select, MenuProps } from 'antd';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -19,24 +20,25 @@ export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = (
   const [selectedKey, setSelectedKey] = useState<string>(location.pathname);
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [language, setLanguage] = useState<string>('zh');
+  const { t } = useTranslation();
 
   useEffect(() => {
     setSelectedKey(location.pathname);
   }, [location.pathname]);
 
   const items = [
-    { label: 'Go', key: '/go', icon: <IconFont type="icon-golang" /> },
-    { label: 'Java', key: '/java', icon: <IconFont type="icon-java" /> },
-    { label: 'JS', key: '/js', icon: <IconFont type="icon-JavaScript" /> },
-    { label: 'Python', key: '/python', icon: <IconFont type="icon-python" /> },
-    { label: 'Rust', key: '/rust', icon: <IconFont type="icon-rust" /> },
-    { label: 'V', key: '/v', icon: <IconFont type="icon-vlang" /> },
-    { label: 'Zig', key: '/zig', icon: <IconFont type="icon-zig" /> },
-    { label: 'Settings', key: '/settings', icon: <SettingTwoTone /> },
-    { label: 'Downloader', key: '/downloader', icon: <IconFont type="icon-downloader" /> },
+    { label: t('nav.go'), key: '/go', icon: <IconFont type="icon-golang" /> },
+    { label: t('nav.java'), key: '/java', icon: <IconFont type="icon-java" /> },
+    { label: t('nav.js'), key: '/js', icon: <IconFont type="icon-JavaScript" /> },
+    { label: t('nav.python'), key: '/python', icon: <IconFont type="icon-python" /> },
+    { label: t('nav.rust'), key: '/rust', icon: <IconFont type="icon-rust" /> },
+    { label: t('nav.v'), key: '/v', icon: <IconFont type="icon-vlang" /> },
+    { label: t('nav.zig'), key: '/zig', icon: <IconFont type="icon-zig" /> },
+    { label: t('nav.settings'), key: '/settings', icon: <SettingTwoTone /> },
+    { label: t('nav.downloader'), key: '/downloader', icon: <IconFont type="icon-downloader" /> },
   ];
 
-  const handleMenuClick = async (e: any) => {
+  const handleMenuClick: MenuProps['onClick'] = async e => {
     await navigate(e.key);
   };
 
@@ -66,15 +68,15 @@ export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = (
       />
       <div style={{ padding: '16px', textAlign: 'center' }}>
         <Button onClick={toggleTheme} block>
-          {mode === 'dark' ? '🌞 Light' : '🌙 Dark'}
+          {mode === 'dark' ? t('theme.light') : t('theme.dark')}
         </Button>
         <Select
           value={language}
           onChange={handleLanguageChange}
           style={{ width: '100%', marginTop: '16px' }}
           options={[
-            { value: LangEnum.ZH, label: '中文' },
-            { value: LangEnum.EN, label: 'English' },
+            { value: LangEnum.ZH, label: t('lang.zh') },
+            { value: LangEnum.EN, label: t('lang.en') },
           ]}
         />
       </div>

@@ -1,3 +1,53 @@
 {
-    "switch_theme": "切换主题"
+  "switch_theme": "切换主题",
+  "nav": {
+    "go": "Go",
+    "java": "Java",
+    "js": "JS",
+    "python": "Python",
+    "rust": "Rust",
+    "v": "V",
+    "zig": "Zig",
+    "settings": "设置",
+    "downloader": "下载中心"
+  },
+  "theme": {
+    "light": "🌞 浅色",
+    "dark": "🌙 深色"
+  },
+  "lang": {
+    "zh": "中文",
+    "en": "English"
+  },
+  "error": {
+    "title": "出错了",
+    "subtitle": "未知错误",
+    "backHome": "返回首页"
+  },
+  "table": {
+    "version": "版本",
+    "installStatus": "安装状态",
+    "useStatus": "使用状态",
+    "install": "安装",
+    "uninstall": "卸载",
+    "use": "使用",
+    "used": "已使用"
+  },
+  "search": {
+    "placeholder": "输入搜索文本",
+    "button": "搜索"
+  },
+  "settings": {
+    "title": "全局路径设置",
+    "placeholder": "默认: d:\\lvm",
+    "save": "保存配置",
+    "success": "配置已保存，下次安装将生效"
+  },
+  "downloader": {
+    "title": "下载管理",
+    "pythonPrefix": "Python",
+    "completed": "已完成",
+    "downloading": "下载中...",
+    "failed": "下载失败:"
+  }
 }

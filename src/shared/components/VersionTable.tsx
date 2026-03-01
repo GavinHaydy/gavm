@@ -1,6 +1,7 @@
 import type { TableProps } from 'antd';
 import { Table, Input, Button } from 'antd';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const { Search } = Input;
 
@@ -30,13 +31,15 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   onInstallToggle,
   onUseToggle,
 }) => {
+  const { t } = useTranslation();
+
   const columns: TableProps<VersionItem>['columns'] = [
     {
-      title: 'Version',
+      title: t('table.version'),
       dataIndex: 'version',
     },
     {
-      title: 'Install Status',
+      title: t('table.installStatus'),
       dataIndex: 'install_status',
       render: (_, record) => (
         <Button
@@ -44,19 +47,19 @@ export const VersionTable: React.FC<VersionTableProps> = ({
           danger={record.install_status}
           onClick={() => onInstallToggle?.(record)}
         >
-          {record.install_status ? 'Uninstall' : 'Install'}
+          {record.install_status ? t('table.uninstall') : t('table.install')}
         </Button>
       ),
     },
     {
-      title: 'Use Status',
+      title: t('table.useStatus'),
       dataIndex: 'use_status',
       render: (_, record) => (
         <Button
           type={record.use_status ? 'primary' : 'default'}
           onClick={() => onUseToggle?.(record)}
         >
-          {record.use_status ? 'Used' : 'Use'}
+          {record.use_status ? t('table.used') : t('table.use')}
         </Button>
       ),
     },
@@ -65,8 +68,8 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   return (
     <>
       <Search
-        placeholder="Input search text"
-        enterButton="Search"
+        placeholder={t('search.placeholder')}
+        enterButton={t('search.button')}
         onSearch={onSearch}
         style={{ marginBottom: 12 }}
       />

@@ -1,13 +1,15 @@
 import { Result, Button } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 export const ErrorPage = () => {
   const error = useRouteError();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  let title = 'Something went wrong';
-  let subTitle = 'Unknown error';
+  let title = t('error.title');
+  let subTitle = t('error.subtitle');
 
   if (isRouteErrorResponse(error)) {
     title = `${error.status}`;
@@ -23,7 +25,7 @@ export const ErrorPage = () => {
       subTitle={subTitle}
       extra={
         <Button type="primary" onClick={() => navigate('/')}>
-          Back Home
+          {t('error.backHome')}
         </Button>
       }
     />

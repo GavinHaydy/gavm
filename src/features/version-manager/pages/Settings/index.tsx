@@ -1,10 +1,13 @@
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { Button, Card, Input, message } from 'antd';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
 const store = new LazyStore('.settings.json');
 
 export const Settings = () => {
   const [basePath, setBasePath] = useState('');
+  const { t } = useTranslation();
 
   // 初始化读取
   useEffect(() => {
@@ -16,17 +19,17 @@ export const Settings = () => {
   const handleSave = async () => {
     await store.set('base_path', basePath);
     await store.save(); // 持久化到硬盘
-    message.success('配置已保存，下次安装将生效');
+    message.success(t('settings.success'));
   };
 
   return (
-    <Card title="全局路径设置">
+    <Card title={t('settings.title')}>
       <Input
         value={basePath}
         onChange={e => setBasePath(e.target.value)}
-        placeholder="默认 d:\lvm"
+        placeholder={t('settings.placeholder')}
       />
-      <Button onClick={handleSave}>保存配置</Button>
+      <Button onClick={handleSave}>{t('settings.save')}</Button>
     </Card>
   );
 };

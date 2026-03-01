@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const store = new LazyStore('.settings.dat');
 
@@ -13,6 +14,7 @@ export interface DownloadTask {
 
 export const useDownload = () => {
   const [tasks, setTasks] = useState<Record<string, DownloadTask>>({});
+  const { t } = useTranslation();
   useEffect(() => {
     const unlistenPromise = listen<{ version: string; percentage: number }>(
       'download-progress',
@@ -42,7 +44,7 @@ export const useDownload = () => {
       // 2. 调用后端
       await invoke('download_version', { language, version, savePath });
     } catch (err) {
-      console.error('下载失败:', err);
+      console.error(t('downloader.failed'), err);
     }
   };
 

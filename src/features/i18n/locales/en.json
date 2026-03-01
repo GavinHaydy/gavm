@@ -1,3 +1,53 @@
 {
-    "switch_theme": "Switch Theme"
+  "switch_theme": "Switch Theme",
+  "nav": {
+    "go": "Go",
+    "java": "Java",
+    "js": "JS",
+    "python": "Python",
+    "rust": "Rust",
+    "v": "V",
+    "zig": "Zig",
+    "settings": "Settings",
+    "downloader": "Downloader"
+  },
+  "theme": {
+    "light": "🌞 Light",
+    "dark": "🌙 Dark"
+  },
+  "lang": {
+    "zh": "中文",
+    "en": "English"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "subtitle": "Unknown error",
+    "backHome": "Back Home"
+  },
+  "table": {
+    "version": "Version",
+    "installStatus": "Install Status",
+    "useStatus": "Use Status",
+    "install": "Install",
+    "uninstall": "Uninstall",
+    "use": "Use",
+    "used": "Used"
+  },
+  "search": {
+    "placeholder": "Input search text",
+    "button": "Search"
+  },
+  "settings": {
+    "title": "Global Path Settings",
+    "placeholder": "Default: d:\\lvm",
+    "save": "Save Configuration",
+    "success": "Configuration saved, it will take effect on next installation"
+  },
+  "downloader": {
+    "title": "Download Manager",
+    "pythonPrefix": "Python",
+    "completed": "Completed",
+    "downloading": "Downloading...",
+    "failed": "Download failed:"
+  }
 }
