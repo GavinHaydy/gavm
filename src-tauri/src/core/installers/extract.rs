@@ -1,0 +1,31 @@
+use std::fs::{self, File};
+use std::io;
+use std::path::{Path, PathBuf};
+use zip::ZipArchive;
+
+#[allow(dead_code)]
+pub fn unzip_file(zip_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String> {
+    let file = File::open(zip_path).map_err(|e| e.to_string())?;
+    let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;
+
+    fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let outpath = Path::new(dest_path).join(file.name());
+
+        if file.name().ends_with('/') {
+            fs::create_dir_all(&outpath).map_err(|e| e.to_string())?;
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    fs::create_dir_all(p).map_err(|e| e.to_string())?;
+                }
+            }
+            let mut outfile = File::create(&outpath).map_err(|e| e.to_string())?;
+            io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
+}

@@ -3,6 +3,7 @@
 
 use crate::core::dto::PageResult;
 use crate::core::manager::LanguageManager;
+use crate::core::utils::config::get_base_path;
 use crate::utils::config::get_download_path;
 
 #[tauri::command]
@@ -24,9 +25,15 @@ pub async fn install(
     version: String,
 ) -> Result<(), String> {
     // 直接从后端配置获取下载目录
+    let base_dir = get_base_path(&app);
     let download_dir = get_download_path(&app);
     let manager = LanguageManager::new(language)?;
     manager
-        .install(window, version, download_dir.to_string_lossy().to_string())
+        .install(
+            window,
+            version,
+            base_dir.to_string_lossy().to_string(),
+            download_dir.to_string_lossy().to_string(),
+        )
         .await
 }

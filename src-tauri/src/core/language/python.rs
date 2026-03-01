@@ -1,6 +1,7 @@
 // python.rs
 // Python installer implementation
 
+use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
@@ -141,6 +142,37 @@ impl LanguageInstaller for PythonInstaller {
         Ok(None)
     }
 
+    async fn install(
+        &self,
+        window: tauri::Window<Wry>,
+        version: &str,
+        base_dir: &str,
+        save_path: &str,
+    ) -> Result<(), String> {
+        // 1. 获取 URL
+        let url = self.get_download_url(version)?;
+        println!("url {}", url);
+
+        // 2. 确定本地路径
+        let dest_path = PathBuf::from(save_path).join(format!("python-{}.zip", version));
+
+        // 3. 调用通用下载器（流式下载 + 进度回传）
+        crate::core::installers::downloader::Downloader::download_with_progress(
+            window,
+            version,
+            &url,
+            dest_path.clone(),
+        )
+        .await?;
+
+        // 4. 下载完成后，继续执行解压逻辑...
+        // self.extract(&dest_path, ...).await?;
+        let extract_path = PathBuf::from(base_dir).join("python").join(version);
+        println!("extract_path {:?}", extract_path);
+        unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
+        Ok(())
+    }
+
     fn get_download_url(&self, version: &str) -> Result<String, String> {
         let platform = self.get_platform();
         let arch = self.get_arch();
@@ -164,34 +196,6 @@ impl LanguageInstaller for PythonInstaller {
             _ => return Err("Unsupported platform".into()),
         };
         Ok(url)
-    }
-
-    async fn install(
-        &self,
-        window: tauri::Window<Wry>,
-        version: &str,
-        save_path: &str,
-    ) -> Result<(), String> {
-        // 1. 获取 URL
-        let url = self.get_download_url(version)?;
-        println!("url {}", url);
-
-        // 2. 确定本地路径
-        let dest_path = PathBuf::from(save_path).join(format!("python-{}.zip", version));
-
-        // 3. 调用通用下载器（流式下载 + 进度回传）
-        crate::core::installers::downloader::Downloader::download_with_progress(
-            window,
-            version,
-            &url,
-            dest_path.clone(),
-        )
-        .await?;
-
-        // 4. 下载完成后，继续执行解压逻辑...
-        // self.extract(&dest_path, ...).await?;
-
-        Ok(())
     }
 
     // 实现 Trait 要求的异步 download（虽然我们现在主要用通用的，但接口要求实现）
