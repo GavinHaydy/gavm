@@ -26,6 +26,5 @@ pub fn install_shim() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 fn main() {
-    
     lvm_lib::run()
 }

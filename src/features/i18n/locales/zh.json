@@ -39,7 +39,7 @@
   },
   "settings": {
     "title": "全局路径设置",
-    "placeholder": "默认: d:\\lvm",
+    "placeholder": "默认: {{path}}",
     "save": "保存配置",
     "success": "配置已保存，下次安装将生效"
   },

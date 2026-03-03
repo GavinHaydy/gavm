@@ -7,8 +7,8 @@
 mod commands;
 mod core;
 
-use tauri::Manager;
 use core::*;
+use tauri::Manager;
 
 use commands::*;
 
@@ -36,7 +36,12 @@ pub fn run() {
         })
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, list_versions, install])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            list_versions,
+            install,
+            base_path
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

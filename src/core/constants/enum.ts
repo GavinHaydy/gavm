@@ -6,6 +6,7 @@ export enum LangEnum {
 export enum CommandEnum {
   LIST_VERSIONS = 'list_versions',
   USE_VERSION = 'use_version',
+  BASE_PATH = 'base_path',
 }
 
 export enum InstallStatusEnum {

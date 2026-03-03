@@ -6,9 +6,7 @@ use tauri_plugin_store::StoreExt;
 /// 获取用户 base_path
 pub fn get_base_path(app: &AppHandle) -> PathBuf {
     // 1️⃣ 默认路径（跨平台）
-    let default_path = dirs::home_dir()
-        .expect("cannot get home dir")
-        .join(".lvm"); // 默认 ~/.lvm / C:\Users\xxx\.lvm
+    let default_path = dirs::home_dir().expect("cannot get home dir").join(".lvm"); // 默认 ~/.lvm / C:\Users\xxx\.lvm
 
     // 2️⃣ config / settings.json 文件
     // Tauri store 会在这个路径生成

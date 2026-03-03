@@ -37,3 +37,9 @@ pub async fn install(
         )
         .await
 }
+
+#[tauri::command]
+pub async fn base_path() -> Result<String, String> {
+    let base_dir = shim::get_base_path().to_string_lossy().to_string();
+    Ok(base_dir)
+}

@@ -1,34 +1,41 @@
-import { LazyStore } from '@tauri-apps/plugin-store';
 import { Button, Card, Input, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const store = new LazyStore('.settings.json');
+import { safeInvoke } from '@/api/tauri.ts';
+import { CommandEnum } from '@/core/constants/enum.ts';
 
 export const Settings = () => {
   const [basePath, setBasePath] = useState('');
   const { t } = useTranslation();
 
-  // 初始化读取
   useEffect(() => {
-    void store.get<{ value: string }>('base_path').then(val => {
-      setBasePath(val?.value || 'd:\\lvm');
-    });
+    const init = async () => {
+      try {
+        const defaultPath = await safeInvoke<string>(CommandEnum.BASE_PATH);
+        setBasePath(defaultPath);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    void init();
   }, []);
 
   const handleSave = async () => {
-    await store.set('base_path', basePath);
-    await store.save(); // 持久化到硬盘
+    // await store.set('base_path', basePath);
+    // await store.save(); // 持久化到硬盘
     message.success(t('settings.success'));
   };
 
   return (
     <Card title={t('settings.title')}>
-      <Input
-        value={basePath}
-        onChange={e => setBasePath(e.target.value)}
-        placeholder={t('settings.placeholder')}
-      />
+      {basePath && (
+        <Input
+          value={basePath}
+          onChange={e => setBasePath(e.target.value)}
+          placeholder={t('settings.placeholder', { path: basePath })}
+        />
+      )}
       <Button onClick={handleSave}>{t('settings.save')}</Button>
     </Card>
   );

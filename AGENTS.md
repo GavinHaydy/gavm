@@ -154,13 +154,13 @@ bun run format
 
 ```bash
 # 开发模式(会自动运行 bun run dev)
-bun run tauri dev
+cargo tauri dev
 
 # 构建桌面应用(会自动运行 bun run build)
-bun run tauri build
+cargo tauri build
 
 # 查看所有 Tauri 命令
-bun run tauri --help
+cargo tauri --help
 ```
 
 ### 开发服务器配置

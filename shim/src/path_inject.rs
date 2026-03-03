@@ -1,16 +1,21 @@
 #[cfg(target_os = "windows")]
 pub fn inject_path(shim_dir: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
-    use winreg::enums::*;
-    use winreg::RegKey;
-    use winapi::um::winuser::{SendMessageTimeoutA, HWND_BROADCAST, WM_SETTINGCHANGE, SMTO_ABORTIFHUNG};
     use std::ffi::CString;
+    use winapi::um::winuser::{
+        HWND_BROADCAST, SMTO_ABORTIFHUNG, SendMessageTimeoutA, WM_SETTINGCHANGE,
+    };
+    use winreg::RegKey;
+    use winreg::enums::*;
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let env = hkcu.open_subkey_with_flags("Environment", KEY_READ | KEY_WRITE)?;
     let current_path: String = env.get_value("Path").unwrap_or_default();
 
     let shim_str = shim_dir.to_str().unwrap();
-    if !current_path.to_lowercase().contains(&shim_str.to_lowercase()) {
+    if !current_path
+        .to_lowercase()
+        .contains(&shim_str.to_lowercase())
+    {
         let new_path = format!("{};{}", shim_str, current_path);
         env.set_value("Path", &new_path)?;
         println!("Injected shim path into user PATH: {}", shim_str);

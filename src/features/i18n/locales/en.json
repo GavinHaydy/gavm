@@ -39,7 +39,7 @@
   },
   "settings": {
     "title": "Global Path Settings",
-    "placeholder": "Default: d:\\lvm",
+    "placeholder": "Default: {{path}}",
     "save": "Save Configuration",
     "success": "Configuration saved, it will take effect on next installation"
   },
