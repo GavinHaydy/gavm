@@ -3,6 +3,8 @@ import { Table, Input, Button } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { CommandEnum, InstallStatusEnum } from '@/core/constants/enum';
+
 const { Search } = Input;
 
 export interface VersionItem {
@@ -20,18 +22,30 @@ interface VersionTableProps {
   loading?: boolean;
 
   onSearch?: (value: string) => void;
-  onInstallToggle?: (record: VersionItem) => void;
-  onUseToggle?: (record: VersionItem) => void;
+  handleVersionAction?: (
+    command: CommandEnum | InstallStatusEnum,
+    record: VersionItem,
+  ) => Promise<void>;
 }
 
 export const VersionTable: React.FC<VersionTableProps> = ({
   data,
   loading,
   onSearch,
-  onInstallToggle,
-  onUseToggle,
+  handleVersionAction,
 }) => {
   const { t } = useTranslation();
+
+  const onInstallToggle = async (record: VersionItem) => {
+    const command = record.install_status
+      ? InstallStatusEnum.UNINSTALLED
+      : InstallStatusEnum.INSTALLED;
+    await handleVersionAction?.(command, record);
+  };
+
+  const onUseToggle = async (record: VersionItem) => {
+    await handleVersionAction?.(CommandEnum.USE_VERSION, record);
+  };
 
   const columns: TableProps<VersionItem>['columns'] = [
     {

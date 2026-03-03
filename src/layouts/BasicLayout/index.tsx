@@ -12,13 +12,15 @@ export const BasicLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <AntdSider width={200} theme="light" collapsed={collapsed}>
-        <Sider collapsed={collapsed} onCollapse={() => setCollapsed} />
+      <AntdSider width={200} theme="light" collapsed={collapsed} collapsible trigger={null}>
+        <Sider collapsed={collapsed} onCollapse={setCollapsed} />
       </AntdSider>
 
-      <Content style={{ padding: '16px' }}>
-        <Outlet />
-      </Content>
+      <Layout>
+        <Content style={{ padding: 16 }}>
+          <Outlet />
+        </Content>
+      </Layout>
     </Layout>
   );
 };

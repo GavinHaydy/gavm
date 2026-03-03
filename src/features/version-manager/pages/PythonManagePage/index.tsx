@@ -26,15 +26,14 @@ export const PythonManagePage = () => {
     void getList();
   }, [getList]);
 
-  const handleSearch = async (keyWord: string) => {
+  const handleSearch = (keyWord: string) => {
     setSearchPayload(prevState => ({ ...prevState, keyWord: keyWord }));
   };
 
-  const handleInstallToggle = async (record: VersionItem) => {
-    const command = record.install_status
-      ? InstallStatusEnum.UNINSTALLED
-      : InstallStatusEnum.INSTALLED;
-
+  const handleVersionAction = async (
+    command: CommandEnum | InstallStatusEnum,
+    record: VersionItem,
+  ) => {
     await safeInvoke(command, {
       language: LanguageEnum.PYTHON,
       version: record.version,
@@ -43,21 +42,7 @@ export const PythonManagePage = () => {
     await getList();
   };
 
-  const handleUseToggle = async (record: VersionItem) => {
-    await safeInvoke(CommandEnum.USE_VERSION, {
-      language: LanguageEnum.PYTHON,
-      version: record.version,
-    });
-
-    await getList();
-  };
-
   return (
-    <VersionTable
-      data={data}
-      onInstallToggle={handleInstallToggle}
-      onSearch={handleSearch}
-      onUseToggle={handleUseToggle}
-    />
+    <VersionTable data={data} handleVersionAction={handleVersionAction} onSearch={handleSearch} />
   );
 };

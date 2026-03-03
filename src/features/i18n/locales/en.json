@@ -1,5 +1,7 @@
 {
   "switch_theme": "Switch Theme",
+  "collapse": "Collapse",
+  "expand": "Expand",
   "nav": {
     "go": "Go",
     "java": "Java",
@@ -17,7 +19,8 @@
   },
   "lang": {
     "zh": "中文",
-    "en": "English"
+    "en": "English",
+    "switch": "Switch Language"
   },
   "error": {
     "title": "Something went wrong",

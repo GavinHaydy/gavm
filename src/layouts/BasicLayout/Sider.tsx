@@ -1,6 +1,6 @@
 // src/layouts/BasicLayout/Sider.tsx
-import { SettingTwoTone } from '@ant-design/icons';
-import { Menu, Button, Select, MenuProps } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined, SettingOutlined } from '@ant-design/icons';
+import { Menu, Button, Select, MenuProps, Tooltip, Popover } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,14 +13,20 @@ import { IconFont } from '@/shared/components/IconFont';
 import { saveTheme } from '@/shared/utils/tauriStore';
 import { type RootState } from '@/store';
 
-export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = ({ collapsed }) => {
+interface ISiderProps {
+  collapsed: boolean;
+  onCollapse: (status: boolean) => void;
+}
+
+export const Sider: React.FC<ISiderProps> = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const [selectedKey, setSelectedKey] = useState<string>(location.pathname);
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [language, setLanguage] = useState<string>('zh');
-  const { t } = useTranslation();
 
   useEffect(() => {
     setSelectedKey(location.pathname);
@@ -34,7 +40,7 @@ export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = (
     { label: t('nav.rust'), key: '/rust', icon: <IconFont type="icon-rust" /> },
     { label: t('nav.v'), key: '/v', icon: <IconFont type="icon-vlang" /> },
     { label: t('nav.zig'), key: '/zig', icon: <IconFont type="icon-zig" /> },
-    { label: t('nav.settings'), key: '/settings', icon: <SettingTwoTone /> },
+    { label: t('nav.settings'), key: '/settings', icon: <SettingOutlined /> },
     { label: t('nav.downloader'), key: '/downloader', icon: <IconFont type="icon-downloader" /> },
   ];
 
@@ -44,7 +50,6 @@ export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = (
 
   const toggleTheme = async () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
-
     dispatch(setMode(newMode));
     await saveTheme(newMode);
   };
@@ -55,30 +60,107 @@ export const Sider: React.FC<{ collapsed: boolean; onCollapse: () => void }> = (
   };
 
   return (
-    <div style={{ width: collapsed ? 80 : 200, transition: 'width 0.3s' }}>
-      <Menu
-        mode="inline"
-        selectedKeys={[selectedKey]}
-        onClick={handleMenuClick}
-        items={items.map(item => ({
-          key: item.key,
-          icon: item.icon,
-          label: collapsed ? null : item.label,
-        }))}
-      />
-      <div style={{ padding: '16px', textAlign: 'center' }}>
-        <Button onClick={toggleTheme} block>
-          {mode === 'dark' ? t('theme.light') : t('theme.dark')}
-        </Button>
-        <Select
-          value={language}
-          onChange={handleLanguageChange}
-          style={{ width: '100%', marginTop: '16px' }}
-          options={[
-            { value: LangEnum.ZH, label: t('lang.zh') },
-            { value: LangEnum.EN, label: t('lang.en') },
-          ]}
-        />
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* 菜单 */}
+      <Menu mode="inline" selectedKeys={[selectedKey]} onClick={handleMenuClick} items={items} />
+
+      <div style={{ flex: 1 }} />
+
+      {/* 底部操作区 */}
+      <div style={{ padding: 16 }}>
+        {collapsed ? (
+          /* 折叠状态：纵向 */
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              alignItems: 'center',
+            }}
+          >
+            <Tooltip title={mode === 'dark' ? t('theme.light') : t('theme.dark')} placement="right">
+              <Button
+                type="text"
+                shape="circle"
+                style={{ width: 40, height: 40 }}
+                icon={mode === 'dark' ? '☀️' : '🌙'}
+                onClick={toggleTheme}
+              />
+            </Tooltip>
+
+            <Popover
+              content={
+                <Select
+                  value={language}
+                  onChange={handleLanguageChange}
+                  style={{ width: 120 }}
+                  options={[
+                    { value: LangEnum.ZH, label: t('lang.zh') },
+                    { value: LangEnum.EN, label: t('lang.en') },
+                  ]}
+                />
+              }
+              placement="right"
+            >
+              <Button
+                type="text"
+                shape="circle"
+                style={{ width: 40, height: 40 }}
+                icon={<span>{language === LangEnum.ZH ? '中' : 'EN'}</span>}
+              />
+            </Popover>
+
+            <Tooltip title={t('expand')} placement="right">
+              <Button
+                type="text"
+                shape="circle"
+                style={{ width: 40, height: 40 }}
+                icon={<MenuUnfoldOutlined />}
+                onClick={() => onCollapse(!collapsed)}
+              />
+            </Tooltip>
+          </div>
+        ) : (
+          /* 展开状态：横向 */
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Tooltip title={mode === 'dark' ? t('theme.light') : t('theme.dark')}>
+              <Button type="text" icon={mode === 'dark' ? '☀️' : '🌙'} onClick={toggleTheme} />
+            </Tooltip>
+
+            <Tooltip title={t('lang.switch')}>
+              <Select
+                value={language}
+                onChange={handleLanguageChange}
+                style={{ width: 100 }}
+                options={[
+                  { value: LangEnum.ZH, label: t('lang.zh') },
+                  { value: LangEnum.EN, label: t('lang.en') },
+                ]}
+              />
+            </Tooltip>
+
+            <Tooltip title={collapsed ? t('expand') : t('collapse')}>
+              <Button
+                type="text"
+                icon={<MenuFoldOutlined />}
+                onClick={() => onCollapse(!collapsed)}
+              />
+            </Tooltip>
+          </div>
+        )}
       </div>
     </div>
   );

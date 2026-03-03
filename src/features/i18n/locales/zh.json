@@ -1,5 +1,7 @@
 {
   "switch_theme": "切换主题",
+  "collapse": "折叠",
+  "expand": "展开",
   "nav": {
     "go": "Go",
     "java": "Java",
@@ -17,7 +19,8 @@
   },
   "lang": {
     "zh": "中文",
-    "en": "English"
+    "en": "English",
+    "switch": "切换语言"
   },
   "error": {
     "title": "出错了",
