@@ -52,7 +52,7 @@ pub fn install_shims() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("install_shims: copying from {:?}", binary);
 
-    let languages = ["python", "node", "go", "rustc"];
+    let languages = ["python", "go"];
 
     for lang in &languages {
         let target = if cfg!(windows) {
