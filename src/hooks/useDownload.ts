@@ -32,7 +32,7 @@ export const useDownload = () => {
     );
 
     return () => {
-      unlistenPromise.then(f => f());
+      void unlistenPromise.then(f => f());
     };
   }, []);
 
