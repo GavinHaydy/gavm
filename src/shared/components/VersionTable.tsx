@@ -81,12 +81,17 @@ export const VersionTable: React.FC<VersionTableProps> = ({
 
   return (
     <>
-      <Search
-        placeholder={t('search.placeholder')}
-        enterButton={t('search.button')}
-        onSearch={onSearch}
-        style={{ marginBottom: 12 }}
-      />
+      <div style={{ marginBottom: 12, marginTop: 12, textAlign: 'center' }}>
+        <Search
+          placeholder={t('search.placeholder')}
+          enterButton={t('search.button')}
+          onSearch={onSearch}
+          style={{
+            marginBottom: 12,
+            width: '30%',
+          }}
+        />
+      </div>
 
       <Table
         size="small"
