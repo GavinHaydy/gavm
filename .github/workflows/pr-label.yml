@@ -1,9 +1,7 @@
-name: Auto Label
+name: PR Label
 
 on:
-  issues:
-    types: [opened, edited]
-  pull_request:
+  pull_request_target:
     types: [opened, edited, synchronize]
 
 permissions:
@@ -14,26 +12,14 @@ permissions:
 jobs:
   label:
     runs-on: ubuntu-latest
+
     steps:
-
-      # 根据标题打标签
-      - name: Auto Label by Title
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          labels: |
-            ${{ contains(github.event.issue.title, '[Bug]') && 'bug' || '' }}
-            ${{ contains(github.event.issue.title, '[Feature]') && 'enhancement' || '' }}
-
-      # PR默认打pr标签
-      - name: Label PR
-        if: github.event_name == 'pull_request'
+      - name: Add PR label
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: pr
 
-      # 根据修改路径判断
-      - name: Label by Path
-        if: github.event_name == 'pull_request'
+      - name: Detect file changes
         uses: dorny/paths-filter@v3
         id: changes
         with:
@@ -43,13 +29,13 @@ jobs:
             frontend:
               - 'src/**'
 
-      - name: Add Rust Label
+      - name: Add Rust label
         if: steps.changes.outputs.rust == 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: rust
 
-      - name: Add Frontend Label
+      - name: Add Frontend label
         if: steps.changes.outputs.frontend == 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:

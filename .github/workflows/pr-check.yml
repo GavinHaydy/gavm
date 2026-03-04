@@ -1,0 +1,88 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # 1️⃣ 检测改动
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      rust: ${{ steps.filter.outputs.rust }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/**'
+              - 'package.json'
+              - 'bun.lockb'
+              - 'tsconfig.json'
+              - 'vite.config.*'
+            rust:
+              - 'src-tauri/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+
+  # 2️⃣ 前端检查（只在需要时跑）
+  frontend-check:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install deps
+        run: bun install
+
+      - name: Type check
+        run: bun run tsc --noEmit
+
+      - name: Build frontend
+        run: bun run build
+
+  # 3️⃣ Rust 检查（只在需要时跑）
+  rust-check:
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt -- --check
+
+      - name: Clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+
+      - name: Cargo check
+        run: cargo check --manifest-path src-tauri/Cargo.toml
