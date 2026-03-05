@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { safeInvoke } from '@/api/tauri';
 import { CommandEnum, InstallStatusEnum, LanguageEnum } from '@/core/constants/enum';
-import { SearchPayload } from '@/core/types/common.ts';
-import { VersionTable, VersionItem, VersionResult } from '@/shared/components/VersionTable';
+import { SearchPayload, VersionItem, VersionResult } from '@/core/types/common.ts';
+import { VersionTable } from '@/shared/components/VersionTable';
 
 export const PythonManagePage = () => {
   const [searchPayload, setSearchPayload] = useState<SearchPayload>({

@@ -114,3 +114,9 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+body {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}

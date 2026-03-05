@@ -8,3 +8,14 @@ export interface ISearchPayload {
 }
 
 export type SearchPayload = ISearchPayload & InvokeArgs;
+
+export interface VersionItem {
+  version: string;
+  install_status: boolean;
+  use_status: boolean;
+}
+
+export interface VersionResult {
+  total: number;
+  list: VersionItem[];
+}

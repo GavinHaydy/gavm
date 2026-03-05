@@ -1,26 +1,14 @@
 import type { TableProps } from 'antd';
 import { Table, Input, Button } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { CommandEnum, InstallStatusEnum } from '@/core/constants/enum';
-
-const { Search } = Input;
-
-export interface VersionItem {
-  version: string;
-  install_status: boolean;
-  use_status: boolean;
-}
-export interface VersionResult {
-  total: number;
-  list: VersionItem[];
-}
+import { VersionItem, VersionResult } from '@/core/types/common';
 
 interface VersionTableProps {
   data: VersionResult;
   loading?: boolean;
-
   onSearch?: (value: string) => void;
   handleVersionAction?: (
     command: CommandEnum | InstallStatusEnum,
@@ -35,6 +23,11 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   handleVersionAction,
 }) => {
   const { t } = useTranslation();
+
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
 
   const onInstallToggle = async (record: VersionItem) => {
     const command = record.install_status
@@ -82,7 +75,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   return (
     <>
       <div style={{ marginBottom: 12, marginTop: 12, textAlign: 'center' }}>
-        <Search
+        <Input.Search
           placeholder={t('search.placeholder')}
           enterButton={t('search.button')}
           onSearch={onSearch}
@@ -101,8 +94,14 @@ export const VersionTable: React.FC<VersionTableProps> = ({
         loading={loading}
         pagination={{
           total: data.total,
-          current: 1,
-          pageSize: 10,
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+        }}
+        onChange={pagination => {
+          setPagination({
+            current: pagination.current || 1,
+            pageSize: pagination.pageSize || 10,
+          });
         }}
       />
     </>
