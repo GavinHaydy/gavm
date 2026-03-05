@@ -1,4 +1,6 @@
+use std::fs;
 // src/core/utils/config.rs
+use serde_json::json;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
@@ -38,4 +40,23 @@ pub fn get_download_path(app: &AppHandle) -> PathBuf {
     }
 
     download_dir
+}
+
+pub fn init_settings() -> PathBuf {
+    let base_dir = shim::get_base_path();
+    let settings_path = base_dir.join("settings.json");
+    if !settings_path.exists() {
+        let config = json!({
+            "auto_activate": true,
+            "download_path": base_dir.join("download"),
+            "versions_path": base_dir.join("versions"),
+        });
+
+        fs::write(
+            &settings_path,
+            serde_json::to_string_pretty(&config).unwrap(),
+        )
+        .expect("Failed to create settings file");
+    }
+    settings_path
 }

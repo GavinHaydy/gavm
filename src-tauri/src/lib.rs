@@ -9,6 +9,7 @@ mod core;
 
 use core::*;
 use tauri::Manager;
+use utils::config::*;
 
 use commands::*;
 
@@ -31,6 +32,7 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             init_shims();
+            init_settings();
             let _app_handle = app.app_handle();
             Ok(())
         })
@@ -40,7 +42,8 @@ pub fn run() {
             greet,
             list_versions,
             install,
-            base_path
+            base_path,
+            get_config_value
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

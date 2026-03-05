@@ -5,6 +5,8 @@ use crate::core::dto::PageResult;
 use crate::core::manager::LanguageManager;
 use crate::core::utils::config::get_base_path;
 use crate::utils::config::get_download_path;
+use serde_json::Value;
+use std::fs;
 
 #[tauri::command]
 pub async fn list_versions(
@@ -42,4 +44,14 @@ pub async fn install(
 pub async fn base_path() -> Result<String, String> {
     let base_dir = shim::get_base_path().to_string_lossy().to_string();
     Ok(base_dir)
+}
+
+#[tauri::command]
+pub fn get_config_value(key: &str) -> Option<Value> {
+    let config_path = shim::get_base_path().join("settings.json");
+    let content = fs::read_to_string(config_path).ok()?;
+
+    let json: Value = serde_json::from_str(&content).ok()?;
+
+    json.get(key).cloned()
 }
