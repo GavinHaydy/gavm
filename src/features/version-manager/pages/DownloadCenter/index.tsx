@@ -16,7 +16,7 @@ export const DownloadCenter = () => {
             <div style={{ width: '100%' }}>
               <Space style={{ marginBottom: 8 }}>
                 <strong>
-                  {t('downloader.pythonPrefix')} {item.version}
+                  {t('downloader.python_prefix')} {item.version}
                 </strong>
                 {item.status === 'success' ? (
                   <Badge status="success" text={t('downloader.completed')} />

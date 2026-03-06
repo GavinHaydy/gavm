@@ -12,13 +12,19 @@ import unusedImports from 'eslint-plugin-unused-imports';
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
-
   {
-    files: ['src/**/*.{ts,tsx}'],
     ignores: [
       'node_modules/**',
       'dist/**',
       'build/**',
+      'target/**',
+      'src-tauri/target/**',
+    ],
+  },
+
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
       '.editorconfig',
       '.gitignore',
       '.prettierrc.js',

@@ -46,7 +46,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
       dataIndex: 'version',
     },
     {
-      title: t('table.installStatus'),
+      title: t('table.install_status'),
       dataIndex: 'install_status',
       render: (_, record) => (
         <Button
@@ -59,7 +59,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
       ),
     },
     {
-      title: t('table.useStatus'),
+      title: t('table.use_status'),
       dataIndex: 'use_status',
       render: (_, record) => (
         <Button
@@ -81,7 +81,8 @@ export const VersionTable: React.FC<VersionTableProps> = ({
           onSearch={onSearch}
           style={{
             marginBottom: 12,
-            width: '30%',
+            width: '100%',
+            maxWidth: 400,
           }}
         />
       </div>
@@ -92,10 +93,13 @@ export const VersionTable: React.FC<VersionTableProps> = ({
         columns={columns}
         rowKey={record => record.version}
         loading={loading}
+        scroll={{ x: 'max-content' }}
         pagination={{
           total: data.total,
           current: pagination.current,
           pageSize: pagination.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
         }}
         onChange={pagination => {
           setPagination({

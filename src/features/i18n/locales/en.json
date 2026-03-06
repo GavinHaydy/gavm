@@ -29,8 +29,8 @@
   },
   "table": {
     "version": "Version",
-    "installStatus": "Install Status",
-    "useStatus": "Use Status",
+    "install_status": "Install Status",
+    "use_status": "Use Status",
     "install": "Install",
     "uninstall": "Uninstall",
     "use": "Use",
@@ -44,11 +44,14 @@
     "title": "Global Path Settings",
     "placeholder": "Default: {{path}}",
     "save": "Save Configuration",
-    "success": "Configuration saved, it will take effect on next installation"
+    "success": "Configuration saved, it will take effect on next installation",
+    "base_path": "Base Path",
+    "download_path": "Download Path",
+    "versions_path": "Versions Path"
   },
   "downloader": {
     "title": "Download Manager",
-    "pythonPrefix": "Python",
+    "python_prefix": "Python",
     "completed": "Completed",
     "downloading": "Downloading...",
     "failed": "Download failed:"

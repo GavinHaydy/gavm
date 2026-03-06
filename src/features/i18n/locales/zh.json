@@ -29,8 +29,8 @@
   },
   "table": {
     "version": "版本",
-    "installStatus": "安装状态",
-    "useStatus": "使用状态",
+    "install_status": "安装状态",
+    "use_status": "使用状态",
     "install": "安装",
     "uninstall": "卸载",
     "use": "使用",
@@ -44,11 +44,14 @@
     "title": "全局路径设置",
     "placeholder": "默认: {{path}}",
     "save": "保存配置",
-    "success": "配置已保存，下次安装将生效"
+    "success": "配置已保存，下次安装将生效",
+    "base_path": "基础路径",
+    "download_path": "下载路径",
+    "versions_path": "版本路径"
   },
   "downloader": {
     "title": "下载管理",
-    "pythonPrefix": "Python",
+    "python_prefix": "Python",
     "completed": "已完成",
     "downloading": "下载中...",
     "failed": "下载失败:"
