@@ -1,7 +1,13 @@
 export const mockVersions = {
-  total: 2,
+  total: 8,
   list: [
+    { version: '3.11.3', installed: true, active: false },
+    { version: '3.10.7', installed: true, active: true },
+    { version: '3.12.1', installed: false, active: false },
+    { version: '3.13.0', installed: true, active: true },
     { version: '3.11.8', installed: true, active: true },
-    { version: '3.12.0', installed: false, active: false },
+    { version: '3.12.5', installed: false, active: false },
+    { version: '3.10.2', installed: true, active: false },
+    { version: '3.13.3', installed: true, active: false },
   ],
 };
