@@ -30,7 +30,7 @@ jobs:
               - 'tsconfig.json'
               - 'vite.config.*'
             rust:
-              - 'src-tauri/**'
+              - 'src-tauri/src/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
 
