@@ -35,11 +35,11 @@ pub fn install_shims() -> Result<(), Box<dyn std::error::Error>> {
     // 自动判断 debug / release
     let workspace_root = std::env::current_dir()?.parent().unwrap().to_path_buf();
 
-    let mut binary = if cfg!(debug_assertions) {
-        workspace_root.join("target/debug/shim")
+    let mut binary = workspace_root.join(if cfg!(debug_assertions) {
+        "target/debug/shim"
     } else {
-        workspace_root.join("target/release/shim")
-    };
+        "target/release/shim"
+    });
 
     #[cfg(target_os = "windows")]
     {
