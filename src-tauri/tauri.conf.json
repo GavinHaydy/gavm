@@ -15,7 +15,9 @@
         "userAgent": "lvm",
         "title": "LVM",
         "width": 800,
-        "height": 600
+        "height": 700,
+        "minWidth": 800,
+        "minHeight": 700
       }
     ],
     "security": {
