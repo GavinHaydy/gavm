@@ -13,12 +13,13 @@ pub fn get_base_path() -> PathBuf {
     let default_path = dirs::home_dir().unwrap().join(".lvm");
     let config_path = default_path.join("config.json");
 
-    if config_path.exists() 
-        && let Ok(s) = fs::read_to_string(&config_path) 
-            && let Ok(json) = serde_json::from_str::<serde_json::Value>(&s) 
-                && let Some(base) = json.get("base_path").and_then(|v| v.as_str()) {
-                    return PathBuf::from(base);
-                }
+    if config_path.exists()
+        && let Ok(s) = fs::read_to_string(&config_path)
+        && let Ok(json) = serde_json::from_str::<serde_json::Value>(&s)
+        && let Some(base) = json.get("base_path").and_then(|v| v.as_str())
+    {
+        return PathBuf::from(base);
+    }
 
     default_path
 }
@@ -38,7 +39,7 @@ pub fn install_shims() -> Result<(), Box<dyn std::error::Error>> {
     let mut binary = workspace_root.join("target/debug/shim");
 
     #[cfg(not(debug_assertions))]
-    let  binary = workspace_root.join("target/release/shim");
+    let binary = workspace_root.join("target/release/shim");
 
     #[cfg(target_os = "windows")]
     binary.set_extension("exe");
