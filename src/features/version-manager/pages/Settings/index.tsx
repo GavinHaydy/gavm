@@ -21,6 +21,11 @@ export const Settings = () => {
         const versionPath = await safeInvoke<string>(CommandEnum.GET_CONFIG_VALUE, {
           key: CommandEnum.VERSIONS_PATH,
         });
+        const testV = await safeInvoke<string>(CommandEnum.GET_CONFIG_VALUES, {
+          keys: [CommandEnum.VERSIONS_PATH, CommandEnum.DOWNLOAD_PATH, CommandEnum.AUTO_ACTIVATE],
+        });
+        console.log(testV);
+        
         setDownloadPath(downPath);
         setVersionsPath(versionPath);
         setBasePath(defaultPath);

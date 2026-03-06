@@ -5,10 +5,10 @@
   "nav": {
     "go": "Go",
     "java": "Java",
-    "js": "JS",
+    "js": "JavaScript",
     "python": "Python",
     "rust": "Rust",
-    "v": "V",
+    "v": "VLang",
     "zig": "Zig",
     "settings": "Settings",
     "downloader": "Downloader"

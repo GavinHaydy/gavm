@@ -55,3 +55,16 @@ pub fn get_config_value(key: &str) -> Option<Value> {
 
     json.get(key).cloned()
 }
+
+#[tauri::command]
+pub fn get_config_values(keys: Vec<&str>) -> Value {
+    let mut map = serde_json::Map::new();
+
+    for key in keys {
+        if let Some(value) = get_config_value(key) {
+            map.insert((*key).to_string(), value);
+        }
+    }
+
+    Value::Object(map)
+}

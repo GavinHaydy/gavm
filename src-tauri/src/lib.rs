@@ -43,7 +43,8 @@ pub fn run() {
             list_versions,
             install,
             base_path,
-            get_config_value
+            get_config_value,
+            get_config_values
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
