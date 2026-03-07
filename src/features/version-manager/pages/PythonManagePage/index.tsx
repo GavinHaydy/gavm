@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { safeInvoke } from '@/api/tauri';
 import { CommandEnum, InstallStatusEnum, LanguageEnum } from '@/core/constants/enum';
@@ -19,7 +19,7 @@ export const PythonManagePage = () => {
     list: [],
   });
 
-  const getList = useCallback(async () => {
+  const getList = async () => {
     try {
       setLoading(true);
       const data = await safeInvoke<VersionResult>(CommandEnum.LIST_VERSIONS, searchPayload);
@@ -29,11 +29,11 @@ export const PythonManagePage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchPayload]);
+  };
 
   useEffect(() => {
     void getList();
-  }, []);
+  }, [searchPayload]);
 
   const handleSearch = (keyWord: string) => {
     setSearchPayload(prevState => ({ ...prevState, keyWord: keyWord }));

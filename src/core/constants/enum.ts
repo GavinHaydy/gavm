@@ -15,7 +15,7 @@ export enum CommandEnum {
 }
 
 export enum InstallStatusEnum {
-  INSTALLED = 'installed',
+  INSTALLED = 'install',
   UNINSTALLED = 'not_installed',
 }
 
