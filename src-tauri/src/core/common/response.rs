@@ -10,7 +10,7 @@ pub struct ApiResponse<T> {
 impl<T> ApiResponse<T> {
     pub fn success_with_data(data: T) -> Self {
         Self {
-            code: 10000,
+            code: 200,
             msg: "success".into(),
             data: Some(data),
         }
@@ -18,7 +18,7 @@ impl<T> ApiResponse<T> {
 
     pub fn success_with_msg() -> Self {
         Self {
-            code: 10000,
+            code: 200,
             msg: "success".into(),
             data: None,
         }
@@ -28,7 +28,7 @@ impl<T> ApiResponse<T> {
 impl<T> ApiResponse<T> {
     pub fn error(msg: &str) -> Self {
         Self {
-            code: 10001,
+            code: 500,
             msg: msg.into(),
             data: None,
         }
