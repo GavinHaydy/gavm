@@ -13,23 +13,12 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      'target/**',
-      'src-tauri/target/**',
-    ],
+    ignores: ['node_modules/**', 'dist/**', 'build/**', 'target/**', 'src-tauri/target/**'],
   },
 
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: [
-      '.editorconfig',
-      '.gitignore',
-      '.prettierrc.js',
-      'README.md',
-    ],
+    ignores: ['.editorconfig', '.gitignore', '.prettierrc.js', 'README.md'],
 
     languageOptions: {
       parser: tsParser,
@@ -95,7 +84,6 @@ export default [
 
       /* ---------------- React Hooks ---------------- */
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
 
       /* ---------------- TypeScript ---------------- */
       '@typescript-eslint/no-floating-promises': [

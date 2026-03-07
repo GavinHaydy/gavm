@@ -4,6 +4,7 @@ export enum LangEnum {
 }
 
 export enum CommandEnum {
+  UPDATE_CONFIG = 'update_configs',
   GET_CONFIG_VALUES = 'get_config_values',
   LIST_VERSIONS = 'list_versions',
   USE_VERSION = 'use_version',

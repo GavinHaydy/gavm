@@ -47,7 +47,9 @@
     "success": "配置已保存，下次安装将生效",
     "base_path": "基础路径",
     "download_path": "下载路径",
-    "versions_path": "版本路径"
+    "versions_path": "版本路径",
+    "auto_activate": "自动激活",
+    "error": "操作失败"
   },
   "downloader": {
     "title": "下载管理",

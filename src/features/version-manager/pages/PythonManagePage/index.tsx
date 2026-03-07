@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 
 import { safeInvoke } from '@/api/tauri';
@@ -6,6 +7,7 @@ import { SearchPayload, VersionItem, VersionResult } from '@/core/types/common.t
 import { VersionTable } from '@/shared/components/VersionTable';
 
 export const PythonManagePage = () => {
+  const [loading, setLoading] = useState(false);
   const [searchPayload, setSearchPayload] = useState<SearchPayload>({
     language: LanguageEnum.PYTHON,
     page: 0,
@@ -18,13 +20,20 @@ export const PythonManagePage = () => {
   });
 
   const getList = useCallback(async () => {
-    const result = await safeInvoke<VersionResult>(CommandEnum.LIST_VERSIONS, searchPayload);
-    setData(result);
+    try {
+      setLoading(true);
+      const data = await safeInvoke<VersionResult>(CommandEnum.LIST_VERSIONS, searchPayload);
+      setData(data);
+    } catch (error) {
+      message.error((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
   }, [searchPayload]);
 
   useEffect(() => {
     void getList();
-  }, [getList]);
+  }, []);
 
   const handleSearch = (keyWord: string) => {
     setSearchPayload(prevState => ({ ...prevState, keyWord: keyWord }));
@@ -43,6 +52,11 @@ export const PythonManagePage = () => {
   };
 
   return (
-    <VersionTable data={data} handleVersionAction={handleVersionAction} onSearch={handleSearch} />
+    <VersionTable
+      loading={loading}
+      data={data}
+      handleVersionAction={handleVersionAction}
+      onSearch={handleSearch}
+    />
   );
 };

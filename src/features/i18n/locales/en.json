@@ -47,7 +47,9 @@
     "success": "Configuration saved, it will take effect on next installation",
     "base_path": "Base Path",
     "download_path": "Download Path",
-    "versions_path": "Versions Path"
+    "versions_path": "Versions Path",
+    "auto_activate": "Auto Activate",
+    "error": "Error"
   },
   "downloader": {
     "title": "Download Manager",
