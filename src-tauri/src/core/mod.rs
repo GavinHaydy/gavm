@@ -4,3 +4,5 @@ pub mod manager;
 pub mod utils;
 
 pub mod installers;
+
+pub mod common;

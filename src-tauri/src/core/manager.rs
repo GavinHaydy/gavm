@@ -23,7 +23,7 @@ impl LanguageManager {
         &self,
         page: usize,
         page_size: usize,
-        key_word: Option<&str>,
+        key_word: Option<String>,
     ) -> Result<PageResult, String> {
         let all_versions = self.installer.list_versions().await?;
         let installed = self.installer.list_installed().await?;
@@ -36,7 +36,7 @@ impl LanguageManager {
             } else {
                 all_versions
                     .into_iter()
-                    .filter(|v| v.contains(key))
+                    .filter(|v| v.contains(key.as_str()))
                     .collect()
             }
         } else {

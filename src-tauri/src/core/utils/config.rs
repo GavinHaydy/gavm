@@ -1,9 +1,12 @@
 use std::fs;
 // src/core/utils/config.rs
-use serde_json::json;
+use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
+
+use crate::core::common::response::ApiResponse;
 
 /// 获取用户 base_path
 pub fn get_base_path(app: &AppHandle) -> PathBuf {
@@ -59,4 +62,44 @@ pub fn init_settings() -> PathBuf {
         .expect("Failed to create settings file");
     }
     settings_path
+}
+
+// 修改配置
+pub fn set_config_values(new_values: HashMap<String, Value>) -> ApiResponse<()> {
+    let settings_path = init_settings();
+
+    // 1. 读取原来的配置
+    let content = match fs::read_to_string(&settings_path) {
+        Ok(c) => c,
+        Err(_) => return ApiResponse::error("Failed to read settings file"),
+    };
+
+    let mut settings: Value = match serde_json::from_str(&content) {
+        Ok(v) => v,
+        Err(_) => return ApiResponse::error("Invalid settings format"),
+    };
+
+    // 确保是对象
+    if !settings.is_object() {
+        return ApiResponse::error("Settings is not a JSON object");
+    }
+
+    let obj = settings.as_object_mut().unwrap();
+
+    // 2. 更新
+    for (k, v) in new_values {
+        obj.insert(k, v);
+    }
+
+    // 3. 写回文件
+    if fs::write(
+        &settings_path,
+        serde_json::to_string_pretty(&settings).unwrap(),
+    )
+    .is_err()
+    {
+        return ApiResponse::error("Failed to write settings file");
+    }
+
+    ApiResponse::success_with_msg()
 }

@@ -1,11 +1,13 @@
 // commands.rs
 // Tauri command layer (bridge between frontend and backend)
 
+use crate::core::common::response::ApiResponse;
 use crate::core::dto::PageResult;
 use crate::core::manager::LanguageManager;
-use crate::core::utils::config::get_base_path;
+use crate::core::utils::config::{get_base_path, set_config_values};
 use crate::utils::config::get_download_path;
 use serde_json::Value;
+use std::collections::HashMap;
 use std::fs;
 
 #[tauri::command]
@@ -13,10 +15,17 @@ pub async fn list_versions(
     language: String,
     page: usize,
     page_size: usize,
-    key_word: Option<&str>,
-) -> Result<PageResult, String> {
-    let manager = LanguageManager::new(language)?;
-    manager.list_versions(page, page_size, key_word).await
+    key_word: Option<String>,
+) -> ApiResponse<PageResult> {
+    let manager = match LanguageManager::new(language) {
+        Ok(m) => m,
+        Err(e) => return ApiResponse::error(&e),
+    };
+
+    match manager.list_versions(page, page_size, key_word).await {
+        Ok(data) => ApiResponse::success_with_data(data),
+        Err(e) => ApiResponse::error(&e),
+    }
 }
 
 #[tauri::command]
@@ -57,7 +66,7 @@ pub fn get_config_value(key: &str) -> Option<Value> {
 }
 
 #[tauri::command]
-pub fn get_config_values(keys: Vec<&str>) -> Value {
+pub fn get_config_values(keys: Vec<&str>) -> ApiResponse<Value> {
     let mut map = serde_json::Map::new();
 
     for key in keys {
@@ -66,5 +75,10 @@ pub fn get_config_values(keys: Vec<&str>) -> Value {
         }
     }
 
-    Value::Object(map)
+    ApiResponse::success_with_data(Value::Object(map))
+}
+
+#[tauri::command]
+pub fn update_configs(new_values: HashMap<String, Value>) -> ApiResponse<()> {
+    set_config_values(new_values)
 }

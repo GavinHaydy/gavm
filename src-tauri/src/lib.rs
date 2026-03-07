@@ -15,11 +15,6 @@ use commands::*;
 
 use shim::install_shims;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 fn init_shims() {
     if let Err(e) = install_shims() {
         println!("Error in installing Tauri application: {}", e);
@@ -39,12 +34,12 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            greet,
             list_versions,
             install,
             base_path,
             get_config_value,
-            get_config_values
+            get_config_values,
+            update_configs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
