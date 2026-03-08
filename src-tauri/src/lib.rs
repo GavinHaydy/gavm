@@ -36,8 +36,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             list_versions,
             install,
+            use_version,
+            uninstall,
             base_path,
-            get_config_value,
             get_config_values,
             update_configs
         ])

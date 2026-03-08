@@ -5,10 +5,9 @@ use crate::core::common::response::ApiResponse;
 use crate::core::dto::PageResult;
 use crate::core::manager::LanguageManager;
 use crate::core::utils::config::{get_base_path, set_config_values};
-use crate::utils::config::get_download_path;
+use crate::utils::config::{get_config_value, get_download_path};
 use serde_json::Value;
 use std::collections::HashMap;
-use std::fs;
 
 #[tauri::command]
 pub async fn list_versions(
@@ -50,19 +49,35 @@ pub async fn install(
 }
 
 #[tauri::command]
-pub async fn base_path() -> Result<String, String> {
-    let base_dir = shim::get_base_path().to_string_lossy().to_string();
-    Ok(base_dir)
+pub async fn use_version(language: String, version: String) -> ApiResponse<()> {
+    let manager = match LanguageManager::new(language) {
+        Ok(m) => m,
+        Err(e) => return ApiResponse::error(&e.to_string()),
+    };
+
+    match manager.use_version(&version).await {
+        Ok(_) => ApiResponse::success_with_msg(),
+        Err(e) => ApiResponse::error(&e),
+    }
 }
 
 #[tauri::command]
-pub fn get_config_value(key: &str) -> Option<Value> {
-    let config_path = shim::get_base_path().join("settings.json");
-    let content = fs::read_to_string(config_path).ok()?;
+pub async fn uninstall(language: String, version: String) -> ApiResponse<()> {
+    let manager = match LanguageManager::new(language) {
+        Ok(m) => m,
+        Err(e) => return ApiResponse::error(&e.to_string()),
+    };
 
-    let json: Value = serde_json::from_str(&content).ok()?;
+    match manager.uninstall(&version).await {
+        Ok(_) => ApiResponse::success_with_msg(),
+        Err(e) => ApiResponse::error(&e),
+    }
+}
 
-    json.get(key).cloned()
+#[tauri::command]
+pub async fn base_path() -> Result<String, String> {
+    let base_dir = shim::get_base_path().to_string_lossy().to_string();
+    Ok(base_dir)
 }
 
 #[tauri::command]

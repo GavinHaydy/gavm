@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 // src/core/utils/config.rs
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -102,4 +102,79 @@ pub fn set_config_values(new_values: HashMap<String, Value>) -> ApiResponse<()> 
     }
 
     ApiResponse::success_with_msg()
+}
+
+pub fn get_config_value(key: &str) -> Option<Value> {
+    let config_path = shim::get_base_path().join("settings.json");
+    let content = fs::read_to_string(config_path).ok()?;
+
+    let json: Value = serde_json::from_str(&content).ok()?;
+
+    json.get(key).cloned()
+}
+
+pub fn get_config_bool(key: &str, default: bool) -> bool {
+    get_config_value(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
+}
+
+pub fn get_dirs(path: &Path) -> Result<Vec<String>, std::io::Error> {
+    let dirs = fs::read_dir(path)?
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            if entry.file_type().ok()?.is_dir() {
+                entry.file_name().into_string().ok()
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok(dirs)
+}
+
+fn get_language_current_path(language: &str) -> Result<String, String> {
+    let current_path = shim::get_base_path().join(language).join("current");
+
+    fs::read_to_string(&current_path)
+        .map(|s| s.trim().to_string())
+        .map_err(|e| e.to_string())
+}
+
+fn get_language_version_path(language: &str, version: &str) -> PathBuf {
+    shim::get_base_path().join(language).join(version)
+}
+
+fn get_language_download_path(language: &str, version: &str) -> PathBuf {
+    shim::get_base_path()
+        .join("download")
+        .join(format!("{}-{}.zip", language, version))
+}
+
+pub fn del_language(language: &str, version: &str) -> Result<(), String> {
+    let download_path = get_language_download_path(language, version);
+    let version_path = get_language_version_path(language, version);
+    let current_version = get_language_current_path(language).unwrap_or_default();
+
+    if current_version == version {
+        return Err(format!(
+            "Cannot delete the currently active version {}",
+            version
+        ));
+    }
+
+    if !version_path.exists() && !download_path.exists() {
+        return Err(format!("Version {} not found", version));
+    }
+
+    if version_path.exists() {
+        fs::remove_dir_all(&version_path).map_err(|e| e.to_string())?;
+    }
+
+    if download_path.exists() {
+        fs::remove_file(&download_path).map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }

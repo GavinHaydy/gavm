@@ -1,13 +1,15 @@
 // python.rs
 // Python installer implementation
 
+use crate::core::common::error::io_err;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
+use crate::core::utils::config::{del_language, get_config_bool, get_dirs};
 use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
 use regex::Regex;
 use reqwest;
-use std::env;
+use std::fs;
 use std::path::PathBuf;
 use tauri::Wry;
 
@@ -56,28 +58,9 @@ impl PythonInstaller {
         }
     }
 
-    // Get base directory for installations
+    // Get base directory
     fn get_base_dir(&self) -> PathBuf {
-        // Check if custom directory is set in environment variable
-        if let Ok(custom_dir) = env::var("LVM_BASE_DIR") {
-            return PathBuf::from(custom_dir);
-        }
-
-        // Default path based on platform
-        #[cfg(target_os = "windows")]
-        {
-            PathBuf::from("D:\\lvm")
-        }
-        #[cfg(any(target_os = "macos", target_os = "linux"))]
-        {
-            env::home_dir()
-                .unwrap_or_else(|| env::current_dir().unwrap())
-                .join(".lvm")
-        }
-        #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-        {
-            env::current_dir().unwrap().join("lvm")
-        }
+        shim::get_base_path().join("python")
     }
 }
 
@@ -114,25 +97,12 @@ impl LanguageInstaller for PythonInstaller {
     }
 
     async fn list_installed(&self) -> Result<Vec<String>, String> {
-        let mut result = Vec::new();
-        let dir = self.get_base_dir().join("python");
-
-        if dir.exists() {
-            for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
-                let entry = entry.map_err(|e| e.to_string())?;
-                if entry.path().is_dir() {
-                    if let Some(name) = entry.file_name().to_str() {
-                        result.push(name.to_string());
-                    }
-                }
-            }
-        }
-
-        Ok(result)
+        let dir = self.get_base_dir();
+        get_dirs(&dir).map_err(|e| e.to_string())
     }
 
     async fn current(&self) -> Result<Option<String>, String> {
-        let path = self.get_base_dir().join("python").join("current_version");
+        let path = self.get_base_dir().join("current");
 
         if path.exists() {
             let v = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
@@ -170,6 +140,30 @@ impl LanguageInstaller for PythonInstaller {
         let extract_path = PathBuf::from(base_dir).join("python").join(version);
         println!("extract_path {:?}", extract_path);
         unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
+
+        // 创建或修改current 根据配置来
+        let current = PathBuf::from(base_dir).join("python").join("current");
+        let auto_activite = get_config_bool("auto_activate", false);
+
+        // 不存在或开启自动切换
+        if !current.exists() || auto_activite {
+            let _ = fs::write(current, version).map_err(io_err);
+        }
+
+        Ok(())
+    }
+
+    async fn use_version(&self, version: &str) -> Result<(), String> {
+        let current_file = self.get_base_dir().join("current");
+
+        fs::write(current_file, version).map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    async fn uninstall(&self, version: &str) -> Result<(), String> {
+        del_language("python", version)?;
+
         Ok(())
     }
 

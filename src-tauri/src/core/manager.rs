@@ -79,6 +79,14 @@ impl LanguageManager {
             .await
     }
 
+    pub async fn use_version(&self, version: &str) -> Result<(), String> {
+        self.installer.use_version(version).await
+    }
+
+    pub async fn uninstall(&self, version: &str) -> Result<(), String> {
+        self.installer.uninstall(version).await
+    }
+
     #[allow(dead_code)]
     pub async fn get_download_url(&self, version: &str) -> Result<String, String> {
         self.installer.get_download_url(version)
