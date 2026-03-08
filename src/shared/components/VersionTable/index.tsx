@@ -6,10 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { CommandEnum, InstallStatusEnum } from '@/core/constants/enum';
 import { VersionItem, VersionResult } from '@/core/types/common';
 
+import './index.css';
+
 interface VersionTableProps {
   data: VersionResult;
   loading?: boolean;
   onSearch?: (value: string) => void;
+  handlePageChange: (page: number, pageSize: number) => void;
   handleVersionAction?: (
     command: CommandEnum | InstallStatusEnum,
     record: VersionItem,
@@ -21,6 +24,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   loading,
   onSearch,
   handleVersionAction,
+  handlePageChange,
 }) => {
   const { t } = useTranslation();
 
@@ -50,6 +54,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
       dataIndex: 'install_status',
       render: (_, record) => (
         <Button
+          className="table-button"
           type="primary"
           danger={record.install_status}
           onClick={() => onInstallToggle?.(record)}
@@ -102,6 +107,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
           pageSizeOptions: ['10', '20', '50'],
         }}
         onChange={pagination => {
+          handlePageChange((pagination.current || 1) - 1, pagination.pageSize || 10);
           setPagination({
             current: pagination.current || 1,
             pageSize: pagination.pageSize || 10,

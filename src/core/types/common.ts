@@ -18,4 +18,6 @@ export interface VersionItem {
 export interface VersionResult {
   total: number;
   list: VersionItem[];
+  page: number;
+  pageSize: number;
 }

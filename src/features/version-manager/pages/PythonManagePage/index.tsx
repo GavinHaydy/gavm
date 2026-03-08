@@ -17,6 +17,8 @@ export const PythonManagePage = () => {
   const [data, setData] = useState<VersionResult>({
     total: 0,
     list: [],
+    page: 0,
+    pageSize: 10,
   });
 
   const getList = async () => {
@@ -39,6 +41,10 @@ export const PythonManagePage = () => {
     setSearchPayload(prevState => ({ ...prevState, keyWord: keyWord }));
   };
 
+  const handlePageChange = (page: number, pageSize: number) => {
+    setSearchPayload(prevState => ({ ...prevState, page, pageSize }));
+  };
+
   const handleVersionAction = async (
     command: CommandEnum | InstallStatusEnum,
     record: VersionItem,
@@ -57,6 +63,7 @@ export const PythonManagePage = () => {
       data={data}
       handleVersionAction={handleVersionAction}
       onSearch={handleSearch}
+      handlePageChange={handlePageChange}
     />
   );
 };
