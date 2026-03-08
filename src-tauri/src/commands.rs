@@ -2,12 +2,11 @@
 // Tauri command layer (bridge between frontend and backend)
 
 use crate::core::common::response::ApiResponse;
-use crate::core::dto::PageResult;
+use crate::core::dto::{PageResult, UpdateConfigReq};
 use crate::core::manager::LanguageManager;
 use crate::core::utils::config::{get_base_path, set_config_values};
 use crate::utils::config::{get_config_value, get_download_path};
 use serde_json::Value;
-use std::collections::HashMap;
 
 #[tauri::command]
 pub async fn list_versions(
@@ -94,6 +93,6 @@ pub fn get_config_values(keys: Vec<&str>) -> ApiResponse<Value> {
 }
 
 #[tauri::command]
-pub fn update_configs(new_values: HashMap<String, Value>) -> ApiResponse<()> {
-    set_config_values(new_values)
+pub fn update_configs(req: UpdateConfigReq) -> ApiResponse<()> {
+    set_config_values(req)
 }

@@ -1,12 +1,11 @@
 use std::{fs, path::Path};
 // src/core/utils/config.rs
 use serde_json::{json, Value};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 
-use crate::core::common::response::ApiResponse;
+use crate::core::{common::response::ApiResponse, dto::UpdateConfigReq};
 
 /// 获取用户 base_path
 pub fn get_base_path(app: &AppHandle) -> PathBuf {
@@ -50,9 +49,9 @@ pub fn init_settings() -> PathBuf {
     let settings_path = base_dir.join("settings.json");
     if !settings_path.exists() {
         let config = json!({
-            "auto_activate": true,
-            "download_path": base_dir.join("download"),
-            "versions_path": base_dir.join("versions"),
+            "autoActivate": true,
+            "downloadPath": base_dir.join("download"),
+            "versionsPath": base_dir.join("versions"),
         });
 
         fs::write(
@@ -65,7 +64,7 @@ pub fn init_settings() -> PathBuf {
 }
 
 // 修改配置
-pub fn set_config_values(new_values: HashMap<String, Value>) -> ApiResponse<()> {
+pub fn set_config_values(req: UpdateConfigReq) -> ApiResponse<()> {
     let settings_path = init_settings();
 
     // 1. 读取原来的配置
@@ -87,8 +86,13 @@ pub fn set_config_values(new_values: HashMap<String, Value>) -> ApiResponse<()> 
     let obj = settings.as_object_mut().unwrap();
 
     // 2. 更新
-    for (k, v) in new_values {
-        obj.insert(k, v);
+    let req_value = serde_json::to_value(req).unwrap();
+    if let Value::Object(map) = req_value {
+        for (k, v) in map {
+            if !v.is_null() {
+                obj.insert(k, v);
+            }
+        }
     }
 
     // 3. 写回文件

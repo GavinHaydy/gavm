@@ -63,7 +63,12 @@ impl LanguageManager {
             })
             .collect();
 
-        Ok(PageResult { total, list })
+        Ok(PageResult {
+            total,
+            list,
+            page,
+            page_size,
+        })
     }
 
     pub async fn install(

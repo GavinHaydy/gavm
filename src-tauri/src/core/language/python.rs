@@ -10,6 +10,7 @@ use async_trait::async_trait;
 use regex::Regex;
 use reqwest;
 use std::fs;
+use std::io::ErrorKind;
 use std::path::PathBuf;
 use tauri::Wry;
 
@@ -104,12 +105,11 @@ impl LanguageInstaller for PythonInstaller {
     async fn current(&self) -> Result<Option<String>, String> {
         let path = self.get_base_dir().join("current");
 
-        if path.exists() {
-            let v = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-            return Ok(Some(v));
+        match std::fs::read_to_string(path) {
+            Ok(v) => Ok(Some(v.trim().to_string())),
+            Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
+            Err(e) => Err(e.to_string()),
         }
-
-        Ok(None)
     }
 
     async fn install(
