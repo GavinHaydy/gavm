@@ -49,12 +49,19 @@ export const PythonManagePage = () => {
     command: CommandEnum | InstallStatusEnum,
     record: VersionItem,
   ) => {
-    await safeInvoke(command, {
-      language: LanguageEnum.PYTHON,
-      version: record.version,
-    });
+    try {
+      setLoading(true);
+      await safeInvoke(command, {
+        language: LanguageEnum.PYTHON,
+        version: record.version,
+      });
 
-    await getList();
+      await getList();
+    } catch (error) {
+      message.error((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

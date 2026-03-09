@@ -4,6 +4,8 @@ import { LazyStore } from '@tauri-apps/plugin-store';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { CommandEnum } from '@/core/constants/enum';
+
 const store = new LazyStore('.settings.dat');
 
 export interface DownloadTask {
@@ -42,7 +44,7 @@ export const useDownload = () => {
 
     try {
       // 2. 调用后端
-      await invoke('download_version', { language, version, savePath });
+      await invoke(CommandEnum.DOWNLOAD_VERSION, { language, version, savePath });
     } catch (err) {
       console.error(t('downloader.failed'), err);
     }

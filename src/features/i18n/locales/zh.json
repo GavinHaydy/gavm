@@ -34,7 +34,7 @@
     "install": "安装",
     "uninstall": "卸载",
     "use": "使用",
-    "used": "已使用"
+    "used": "激活"
   },
   "search": {
     "placeholder": "输入目标版本号",

@@ -42,10 +42,10 @@ export async function safeInvoke<T>(
     res = await tauriCore.invoke<IApiResponse<T>>(command, args);
   }
 
-  if (res.code !== 200) {
+  if (res?.code !== 200) {
     throw new Error(res.msg);
   }
 
-  return res.data;
+  return res?.data;
 }
 export { isTauri };

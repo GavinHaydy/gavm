@@ -11,8 +11,8 @@ export type SearchPayload = ISearchPayload & InvokeArgs;
 
 export interface VersionItem {
   version: string;
-  install_status: boolean;
-  use_status: boolean;
+  installStatus: boolean;
+  useStatus: boolean;
 }
 
 export interface VersionResult {
