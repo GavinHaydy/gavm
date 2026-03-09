@@ -127,13 +127,20 @@ impl LanguageInstaller for PythonInstaller {
         let dest_path = PathBuf::from(save_path).join(format!("python-{}.zip", version));
 
         // 3. 调用通用下载器（流式下载 + 进度回传）
-        crate::core::installers::downloader::Downloader::download_with_progress(
+        match crate::core::installers::downloader::Downloader::download_with_progress(
             window,
             version,
             &url,
             dest_path.clone(),
         )
-        .await?;
+        .await
+        {
+            Ok(v) => v,
+            Err(e) => {
+                let _ = self.uninstall(version).await;
+                return Err(e);
+            }
+        };
 
         // 4. 下载完成后，继续执行解压逻辑...
         // self.extract(&dest_path, ...).await?;
@@ -143,7 +150,7 @@ impl LanguageInstaller for PythonInstaller {
 
         // 创建或修改current 根据配置来
         let current = PathBuf::from(base_dir).join("python").join("current");
-        let auto_activite = get_config_bool("auto_activate", false);
+        let auto_activite = get_config_bool("autoActivate", false);
 
         // 不存在或开启自动切换
         if !current.exists() || auto_activite {

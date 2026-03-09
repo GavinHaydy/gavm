@@ -32,12 +32,16 @@ pub async fn install(
     window: tauri::Window<tauri::Wry>,
     language: String,
     version: String,
-) -> Result<(), String> {
+) -> ApiResponse<()> {
     // 直接从后端配置获取下载目录
     let base_dir = get_base_path(&app);
     let download_dir = get_download_path(&app);
-    let manager = LanguageManager::new(language)?;
-    manager
+    let manager = match LanguageManager::new(language) {
+        Ok(m) => m,
+        Err(e) => return ApiResponse::error(&e.to_string()),
+    };
+
+    match manager
         .install(
             window,
             version,
@@ -45,6 +49,10 @@ pub async fn install(
             download_dir.to_string_lossy().to_string(),
         )
         .await
+    {
+        Ok(_) => ApiResponse::success_with_msg(),
+        Err(e) => ApiResponse::error(&e),
+    }
 }
 
 #[tauri::command]
