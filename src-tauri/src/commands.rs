@@ -56,13 +56,26 @@ pub async fn install(
 }
 
 #[tauri::command]
-pub async fn use_version(language: String, version: String) -> ApiResponse<()> {
+pub async fn activate(language: String, version: String) -> ApiResponse<()> {
     let manager = match LanguageManager::new(language) {
         Ok(m) => m,
         Err(e) => return ApiResponse::error(&e.to_string()),
     };
 
-    match manager.use_version(&version).await {
+    match manager.activate(&version).await {
+        Ok(_) => ApiResponse::success_with_msg(),
+        Err(e) => ApiResponse::error(&e),
+    }
+}
+
+#[tauri::command]
+pub async fn deactivate(language: String, version: String) -> ApiResponse<()> {
+    let manager = match LanguageManager::new(language) {
+        Ok(m) => m,
+        Err(e) => return ApiResponse::error(&e.to_string()),
+    };
+
+    match manager.deactivate(&version).await {
         Ok(_) => ApiResponse::success_with_msg(),
         Err(e) => ApiResponse::error(&e),
     }
