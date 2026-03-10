@@ -4,7 +4,9 @@
 use crate::core::common::error::io_err;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
-use crate::core::utils::config::{del_language, get_config_bool, get_config_value, get_dirs};
+use crate::core::utils::config::{
+    del_language, get_config_bool, get_dirs, get_language_current_path,
+};
 use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
 use regex::Regex;
@@ -169,13 +171,11 @@ impl LanguageInstaller for PythonInstaller {
     }
 
     async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current = get_config_value("current")
-            .and_then(|v| v.as_str().map(str::to_owned))
-            .ok_or("No active version")?;
+        let current_version = get_language_current_path("python").unwrap_or_default();
 
         let current_file = self.get_base_dir().join("current");
 
-        if current != version {
+        if current_version != version {
             return Err(format!("The currently active version is not {}", version));
         }
 

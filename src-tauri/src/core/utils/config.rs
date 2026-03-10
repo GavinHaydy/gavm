@@ -138,7 +138,7 @@ pub fn get_dirs(path: &Path) -> Result<Vec<String>, std::io::Error> {
     Ok(dirs)
 }
 
-fn get_language_current_path(language: &str) -> Result<String, String> {
+pub fn get_language_current_path(language: &str) -> Result<String, String> {
     let current_path = shim::get_base_path().join(language).join("current");
 
     fs::read_to_string(&current_path)
