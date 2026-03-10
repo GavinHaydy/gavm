@@ -30,11 +30,11 @@
   "table": {
     "version": "版本",
     "install_status": "安装状态",
-    "use_status": "使用状态",
+    "use_status": "激活状态",
     "install": "安装",
     "uninstall": "卸载",
-    "use": "使用",
-    "used": "激活"
+    "use": "激活",
+    "used": "取消"
   },
   "search": {
     "placeholder": "输入目标版本号",

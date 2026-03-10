@@ -41,7 +41,6 @@ export const Sider: React.FC<ISiderProps> = ({ collapsed, onCollapse }) => {
     { label: t('nav.v'), key: '/v', icon: <IconFont type="icon-vlang" /> },
     { label: t('nav.zig'), key: '/zig', icon: <IconFont type="icon-zig" /> },
     { label: t('nav.settings'), key: '/settings', icon: <SettingOutlined /> },
-    { label: t('nav.downloader'), key: '/downloader', icon: <IconFont type="icon-downloader" /> },
   ];
 
   const handleMenuClick: MenuProps['onClick'] = async e => {

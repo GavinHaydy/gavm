@@ -8,6 +8,7 @@ export enum CommandEnum {
   GET_CONFIG_VALUES = 'get_config_values',
   LIST_VERSIONS = 'list_versions',
   USE_VERSION = 'activate',
+  UNUSE_VERSION = 'deactivate',
   DOWNLOAD_VERSION = 'download_version',
   DOWNLOAD_PATH = 'downloadPath',
   VERSIONS_PATH = 'versionsPath',

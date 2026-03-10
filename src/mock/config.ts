@@ -1,5 +1,9 @@
 export const mockConfig = {
-  auto_activate: true,
-  download_path: 'C:\\mock\\.lvm\\download',
-  versions_path: 'C:\\mock\\.lvm\\versions',
+  code: 200,
+  msg: 'success',
+  data: {
+    autoActivate: true,
+    downloadPath: 'C:\\mock\\.lvm\\download',
+    versionsPath: 'C:\\mock\\.lvm\\versions',
+  },
 };

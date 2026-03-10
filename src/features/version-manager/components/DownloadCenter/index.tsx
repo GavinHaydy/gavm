@@ -1,14 +1,22 @@
-import { List, Progress, Card, Badge, Space } from 'antd';
+import { List, Progress, Badge, Space, Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import { useDownload } from '@/hooks/useDownload.ts';
+import './index.css';
 
-export const DownloadCenter = () => {
+export const DownloadCenter = ({ onClose, visible }: { onClose: () => void; visible: boolean }) => {
   const { tasks } = useDownload();
   const { t } = useTranslation();
 
   return (
-    <Card title={t('downloader.title')} style={{ margin: 24 }}>
+    <Drawer
+      className="download-center-drawer"
+      onClose={onClose}
+      open={visible}
+      title={t('downloader.title')}
+      style={{ margin: 24 }}
+      closable={false}
+    >
       <List
         dataSource={tasks}
         renderItem={item => (
@@ -32,6 +40,6 @@ export const DownloadCenter = () => {
           </List.Item>
         )}
       />
-    </Card>
+    </Drawer>
   );
 };

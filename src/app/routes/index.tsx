@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { BasicLayout } from '@/app/layouts/BasicLayout';
-import { DownloadCenter } from '@/features/version-manager/pages/DownloadCenter';
 import { PythonManagePage } from '@/features/version-manager/pages/PythonManagePage';
 import { Settings } from '@/features/version-manager/pages/Settings';
 import { ErrorPage } from '@/pages/error';
@@ -23,10 +22,6 @@ export const router = createBrowserRouter([
       {
         path: 'settings',
         element: <Settings />,
-      },
-      {
-        path: 'downloader',
-        element: <DownloadCenter />,
       },
     ],
   },

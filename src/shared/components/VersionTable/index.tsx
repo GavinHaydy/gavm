@@ -36,7 +36,8 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   };
 
   const onUseToggle = async (record: VersionItem) => {
-    await handleVersionAction?.(CommandEnum.USE_VERSION, record);
+    const command = record.useStatus ? CommandEnum.UNUSE_VERSION : CommandEnum.USE_VERSION;
+    await handleVersionAction?.(command, record);
   };
 
   const columns: TableProps<VersionItem>['columns'] = [
@@ -93,7 +94,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
         columns={columns}
         rowKey={record => record.version}
         loading={loading}
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', y: 'calc(100vh - 200px)' }}
         pagination={{
           total: data.total,
           current: data.page + 1,
