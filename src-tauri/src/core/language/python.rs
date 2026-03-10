@@ -215,8 +215,4 @@ impl LanguageInstaller for PythonInstaller {
         Ok(url)
     }
 
-    // 实现 Trait 要求的异步 download（虽然我们现在主要用通用的，但接口要求实现）
-    async fn download(&self, version: &str) -> Result<String, String> {
-        self.get_download_url(version)
-    }
 }

@@ -39,7 +39,6 @@ pub fn run() {
             activate,
             deactivate,
             uninstall,
-            base_path,
             get_config_values,
             update_configs
         ])

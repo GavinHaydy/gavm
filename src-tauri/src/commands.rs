@@ -95,12 +95,6 @@ pub async fn uninstall(language: String, version: String) -> ApiResponse<()> {
 }
 
 #[tauri::command]
-pub async fn base_path() -> Result<String, String> {
-    let base_dir = shim::get_base_path().to_string_lossy().to_string();
-    Ok(base_dir)
-}
-
-#[tauri::command]
 pub fn get_config_values(keys: Vec<&str>) -> ApiResponse<Value> {
     let mut map = serde_json::Map::new();
 
