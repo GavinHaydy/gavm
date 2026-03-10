@@ -84,8 +84,12 @@ impl LanguageManager {
             .await
     }
 
-    pub async fn use_version(&self, version: &str) -> Result<(), String> {
-        self.installer.use_version(version).await
+    pub async fn activate(&self, version: &str) -> Result<(), String> {
+        self.installer.activate(version).await
+    }
+
+    pub async fn deactivate(&self, version: &str) -> Result<(), String> {
+        self.installer.deactivate(version).await
     }
 
     pub async fn uninstall(&self, version: &str) -> Result<(), String> {
