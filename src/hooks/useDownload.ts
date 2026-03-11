@@ -1,14 +1,8 @@
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { LazyStore } from '@tauri-apps/plugin-store';
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { CommandEnum } from '@/core/constants/enum';
-
-const store = new LazyStore('.settings.dat');
 
 export interface DownloadTask {
+  language: string;
   version: string;
   percentage: number;
   status: 'downloading' | 'success' | 'error';
@@ -16,39 +10,79 @@ export interface DownloadTask {
 
 export const useDownload = () => {
   const [tasks, setTasks] = useState<Record<string, DownloadTask>>({});
-  const { t } = useTranslation();
+
   useEffect(() => {
-    const unlistenPromise = listen<{ version: string; percentage: number }>(
-      'download-progress',
-      event => {
-        const { version, percentage } = event.payload;
-        setTasks(prev => ({
-          ...prev,
-          [version]: {
-            version,
-            percentage: Math.floor(percentage),
-            status: percentage >= 100 ? 'success' : 'downloading',
-          },
-        }));
-      },
-    );
+    let lastUpdate = 0;
+
+    // 监听下载进度
+    const progressListener = listen<{
+      language: string;
+      version: string;
+      current: number;
+      total: number;
+      percentage: number;
+    }>('download-progress', event => {
+      const now = Date.now();
+      if (now - lastUpdate < 200) return;
+      lastUpdate = now;
+
+      const { language, version, percentage } = event.payload;
+
+      setTasks(prev => ({
+        ...prev,
+        [version]: {
+          language,
+          version,
+          percentage: Math.floor(percentage),
+          status: 'downloading',
+        },
+      }));
+    });
+
+    // 监听下载完成
+    const completeListener = listen<{
+      language: string;
+      version: string;
+      path: string;
+    }>('download-complete', event => {
+      const { language, version } = event.payload;
+
+      setTasks(prev => ({
+        ...prev,
+        [version]: {
+          language,
+          version,
+          percentage: 100,
+          status: 'success',
+        },
+      }));
+    });
+
+    // 监听下载失败
+    const errorListener = listen<{
+      language: string;
+      version: string;
+      message: string;
+    }>('download-error', event => {
+      const { language, version } = event.payload;
+
+      setTasks(prev => ({
+        ...prev,
+        [version]: {
+          language,
+          version,
+          percentage: prev[version]?.percentage || 0,
+          status: 'error',
+        },
+      }));
+    });
 
     return () => {
-      void unlistenPromise.then(f => f());
+      progressListener.then(f => f());
+      completeListener.then(f => f());
+      errorListener.then(f => f());
     };
   }, []);
 
-  const startDownload = async (language: string, version: string) => {
-    // 1. 获取记住的路径，没有则用默认
-    const savePath = (await store.get<string>('download_path')) || 'D:\\lvm\\download';
-
-    try {
-      // 2. 调用后端
-      await invoke(CommandEnum.DOWNLOAD_VERSION, { language, version, savePath });
-    } catch (err) {
-      console.error(t('downloader.failed'), err);
-    }
-  };
-
-  return { tasks: Object.values(tasks), startDownload };
+  return { tasks: Object.values(tasks) };
 };

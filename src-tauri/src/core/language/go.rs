@@ -143,6 +143,7 @@ impl LanguageInstaller for GoInstaller {
         let dest_path = PathBuf::from(save_path).join(format!("go-{}.{}", version, extension));
 
         match crate::core::installers::downloader::Downloader::download_with_progress(
+            "Go",
             window,
             version,
             &url,

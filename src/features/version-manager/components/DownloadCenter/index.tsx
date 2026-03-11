@@ -19,22 +19,33 @@ export const DownloadCenter = ({ onClose, visible }: { onClose: () => void; visi
     >
       <List
         dataSource={tasks}
+        locale={{ emptyText: t('downloader.empty') }}
         renderItem={item => (
           <List.Item>
             <div style={{ width: '100%' }}>
               <Space style={{ marginBottom: 8 }}>
                 <strong>
-                  {t('downloader.python_prefix')} {item.version}
+                  {item.language} {item.version}
                 </strong>
+
                 {item.status === 'success' ? (
                   <Badge status="success" text={t('downloader.completed')} />
+                ) : item.status === 'error' ? (
+                  <Badge status="error" text={t('downloader.failed')} />
                 ) : (
                   <Badge status="processing" text={t('downloader.downloading')} />
                 )}
               </Space>
+
               <Progress
                 percent={item.percentage}
-                status={item.status === 'success' ? 'normal' : 'active'}
+                status={
+                  item.status === 'success'
+                    ? 'success'
+                    : item.status === 'error'
+                      ? 'exception'
+                      : 'active'
+                }
               />
             </div>
           </List.Item>

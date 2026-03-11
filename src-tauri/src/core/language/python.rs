@@ -130,6 +130,7 @@ impl LanguageInstaller for PythonInstaller {
 
         // 3. 调用通用下载器（流式下载 + 进度回传）
         match crate::core::installers::downloader::Downloader::download_with_progress(
+            "Python",
             window,
             version,
             &url,
