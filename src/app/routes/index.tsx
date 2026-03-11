@@ -1,20 +1,19 @@
 // src/router/index.tsx
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
+
 import { BasicLayout } from '@/app/layouts/BasicLayout';
+import { GoManagePage } from '@/features/version-manager/pages/GoManagePage';
 import { PythonManagePage } from '@/features/version-manager/pages/PythonManagePage';
-import { GoManagePage } from '@/features/version-manager/pages/Go';
 import { Settings } from '@/features/version-manager/pages/Settings';
 import { ErrorPage } from '@/pages/error';
 
-// 菜单元数据类型
 interface RouteMeta {
-  label?: string; // i18n key
-  icon?: string; // IconFont type 或 Antd 图标名
-  hideInMenu?: boolean; // 是否隐藏
+  label?: string;
+  icon?: string;
+  hideInMenu?: boolean;
 }
 
-// 使用类型交叉扩展 RouteObject（而不是 extends）
-type AppRouteObject = RouteObject & {
+export type AppRouteObject = RouteObject & {
   meta?: RouteMeta;
   children?: AppRouteObject[];
 };
@@ -39,20 +38,59 @@ export const routes: AppRouteObject[] = [
         },
       },
       {
-        path: 'settings',
-        element: <Settings />,
+        path: 'java',
+        element: <div>java</div>,
         meta: {
-          label: 'nav.settings',
-          icon: 'SettingOutlined',
+          label: 'nav.java',
+          icon: 'icon-java',
         },
       },
-      // 2. 在这里添加 Go 路由
+      {
+        path: 'js',
+        element: <div>js</div>,
+        meta: {
+          label: 'nav.js',
+          icon: 'icon-JavaScript',
+        },
+      },
       {
         path: 'go',
         element: <GoManagePage />,
         meta: {
           label: 'nav.go',
-          icon: 'icon-golang', // 对应 IconFont 的 type
+          icon: 'icon-golang',
+        },
+      },
+      {
+        path: 'rust',
+        element: <div>rust</div>,
+        meta: {
+          label: 'nav.rust',
+          icon: 'icon-rust',
+        },
+      },
+      {
+        path: 'v',
+        element: <div>v</div>,
+        meta: {
+          label: 'nav.v',
+          icon: 'icon-vlang',
+        },
+      },
+      {
+        path: 'zig',
+        element: <div>zig</div>,
+        meta: {
+          label: 'nav.zig',
+          icon: 'icon-zig',
+        },
+      },
+      {
+        path: 'settings',
+        element: <Settings />,
+        meta: {
+          label: 'nav.settings',
+          icon: 'SettingOutlined',
         },
       },
     ],

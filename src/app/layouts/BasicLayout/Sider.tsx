@@ -1,21 +1,30 @@
 // src/layouts/BasicLayout/Sider.tsx
 import { MenuFoldOutlined, MenuUnfoldOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu, Button, Select, Tooltip, Popover } from 'antd';
+import { ItemType, MenuItemType } from 'antd/es/menu/interface';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+import { AppRouteObject, routes } from '@/app/routes'; // 导入路由配置
 import { LangEnum } from '@/core/constants/enum';
 import i18n from '@/features/i18n';
 import { setMode } from '@/features/theme/themeSlice';
 import { IconFont } from '@/shared/components/IconFont';
 import { saveTheme } from '@/shared/utils/tauriStore';
 import { type RootState } from '@/store';
-import { routes } from '@/app/routes'; // 导入路由配置
 
 interface ISiderProps {
   collapsed: boolean;
   onCollapse: (status: boolean) => void;
+}
+
+interface IMenuItem {
+  key: string;
+  label: string;
+  icon?: React.ReactNode;
+  children?: IMenuItem[];
 }
 
 // 内置图标映射表（处理 SettingOutlined 这类 antd 图标）
@@ -31,52 +40,41 @@ export const Sider: React.FC<ISiderProps> = ({ collapsed, onCollapse }) => {
   const mode = useSelector((state: RootState) => state.theme.mode);
   const [language, setLanguage] = React.useState<string>('zh');
 
+  const extractMenus = (routeList: AppRouteObject[], parentPath = ''): IMenuItem[] => {
+    return routeList
+      .filter(route => route.meta && !route.meta.hideInMenu)
+      .map(route => {
+        const fullPath = route.path!.startsWith('/')
+          ? route.path
+          : `${parentPath}/${route.path}`.replace(/\/+/g, '/');
+
+        const icon = route.meta!.icon
+          ? (builtinIcons[route.meta!.icon] ?? <IconFont type={route.meta!.icon} />)
+          : null;
+
+        const item: IMenuItem = {
+          key: fullPath ?? '',
+          label: t(route!.meta?.label ?? ''),
+          icon,
+        };
+
+        if (route.children) {
+          const children = extractMenus(route.children, fullPath);
+          if (children.length > 0) {
+            item.children = children;
+          }
+        }
+
+        return item;
+      });
+  };
+
   // 从路由配置生成菜单项
   const menuItems = useMemo(() => {
-    // 递归提取菜单
-    const extractMenus = (routeList: any[], parentPath = ''): any[] => {
-      return routeList
-        .filter(route => route.meta && !route.meta.hideInMenu) // 只显示有 meta 且未隐藏的
-        .map(route => {
-          // 处理路径（支持相对路径拼接）
-          const fullPath = route.path.startsWith('/')
-            ? route.path
-            : `${parentPath}/${route.path}`.replace(/\/+/g, '/');
-
-          // 处理图标
-          let icon = null;
-          if (route.meta.icon) {
-            if (builtinIcons[route.meta.icon]) {
-              icon = builtinIcons[route.meta.icon];
-            } else {
-              icon = <IconFont type={route.meta.icon} />;
-            }
-          }
-
-          const item: any = {
-            key: fullPath,
-            label: t(route.meta.label),
-            icon,
-          };
-
-          // 递归处理子路由（如果有）
-          if (route.children) {
-            const children = extractMenus(route.children, fullPath);
-            if (children.length > 0) {
-              item.children = children;
-            }
-          }
-
-          return item;
-        });
-    };
-
-    // 从 BasicLayout 的子路由中提取（routes[0] 是 layout 路由）
     const layoutRoute = routes[0];
     return layoutRoute?.children ? extractMenus(layoutRoute.children) : [];
   }, [t]);
 
-  // 主题、语言切换等逻辑保持不变...
   const toggleTheme = async () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     dispatch(setMode(newMode));
@@ -89,18 +87,16 @@ export const Sider: React.FC<ISiderProps> = ({ collapsed, onCollapse }) => {
   };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* 菜单 - 现在使用动态生成的 menuItems */}
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Menu
         mode="inline"
         selectedKeys={[location.pathname]}
         onClick={e => navigate(e.key)}
-        items={menuItems}
+        items={menuItems as ItemType<MenuItemType>[]}
       />
 
       <div style={{ flex: 1 }} />
 
-      {/* 底部操作区代码保持不变... */}
       <div style={{ padding: 16 }}>
         {collapsed ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
