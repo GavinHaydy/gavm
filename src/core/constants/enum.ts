@@ -22,4 +22,5 @@ export enum InstallStatusEnum {
 
 export enum LanguageEnum {
   PYTHON = 'python',
+  GO = 'go',
 }

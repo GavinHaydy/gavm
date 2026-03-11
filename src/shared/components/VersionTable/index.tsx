@@ -64,6 +64,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
       dataIndex: 'useStatus',
       render: (_, record) => (
         <Button
+          disabled={!record.installStatus}
           type={record.useStatus ? 'primary' : 'default'}
           onClick={() => onUseToggle?.(record)}
         >
