@@ -2,8 +2,8 @@
 // Language manager responsible for orchestration
 
 use crate::core::dto::{PageResult, VersionInfo};
-use crate::core::language::{python::PythonInstaller, LanguageInstaller};
 use crate::core::language::go::GoInstaller;
+use crate::core::language::{python::PythonInstaller, LanguageInstaller};
 use tauri::{Window, Wry};
 
 pub struct LanguageManager {

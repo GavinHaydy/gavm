@@ -1,19 +1,19 @@
 // python.rs
 // Python installer implementation
 
-use std::fs;
-use std::io::ErrorKind;
-use std::path::PathBuf;
-use async_trait::async_trait;
-use regex::Regex;
-use tauri::Wry;
 use crate::core::common::error::io_err;
-use crate::core::installers::extract::{unzip_file, untar_file};
+use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
-use crate::core::utils::semver::sort_versions_desc;
 use crate::core::utils::config::{
     del_language, get_config_bool, get_dirs, get_language_current_path,
 };
+use crate::core::utils::semver::sort_versions_desc;
+use async_trait::async_trait;
+use regex::Regex;
+use std::fs;
+use std::io::ErrorKind;
+use std::path::PathBuf;
+use tauri::Wry;
 
 pub struct GoInstaller;
 
@@ -65,8 +65,8 @@ impl GoInstaller {
     }
 }
 #[async_trait]
-impl LanguageInstaller for GoInstaller{
-    async fn list_versions(&self) -> Result<Vec<String>, String>{
+impl LanguageInstaller for GoInstaller {
+    async fn list_versions(&self) -> Result<Vec<String>, String> {
         let client = reqwest::Client::new();
 
         let html = client
@@ -75,8 +75,13 @@ impl LanguageInstaller for GoInstaller{
             .header("User-Agent", "LVM-Language-Version-Manager")
             .send()
             .await
-            .map_err(|e| format!("Failed to fetch Go versions from {}: {}",
-                                 self.get_base_url(), e))?
+            .map_err(|e| {
+                format!(
+                    "Failed to fetch Go versions from {}: {}",
+                    self.get_base_url(),
+                    e
+                )
+            })?
             .text()
             .await
             .map_err(|e| format!("Failed to parse HTML response: {}", e))?;
@@ -84,9 +89,9 @@ impl LanguageInstaller for GoInstaller{
         let re = Regex::new(r#"/dl/go(\d+\.\d+(?:\.\d+)?)[^"]*\.(zip|tar\.gz)"#)
             .map_err(|e| e.to_string())?;
 
-        let mut versions=Vec::new();
+        let mut versions = Vec::new();
 
-        for cap in re.captures_iter(&html){
+        for cap in re.captures_iter(&html) {
             let version = cap[1].to_string();
             if version.starts_with("1.") {
                 versions.push(version);
@@ -98,10 +103,9 @@ impl LanguageInstaller for GoInstaller{
         sort_versions_desc(&mut versions);
 
         Ok(versions)
-
     }
-    async fn list_installed(&self) -> Result<Vec<String>, String>{
-        let dir=self.get_base_dir();
+    async fn list_installed(&self) -> Result<Vec<String>, String> {
+        let dir = self.get_base_dir();
 
         if !dir.exists() {
             return Ok(vec![]);
@@ -109,7 +113,7 @@ impl LanguageInstaller for GoInstaller{
 
         get_dirs(&dir).map_err(|e| e.to_string())
     }
-    async fn current(&self) -> Result<Option<String>, String>{
+    async fn current(&self) -> Result<Option<String>, String> {
         let path = self.get_base_dir().join("current");
 
         match std::fs::read_to_string(path) {
@@ -125,7 +129,7 @@ impl LanguageInstaller for GoInstaller{
         version: &str,
         base_dir: &str,
         save_path: &str,
-    ) -> Result<(), String>{
+    ) -> Result<(), String> {
         let url = self.get_download_url(version)?;
 
         let extension = if url.ends_with(".zip") {
@@ -144,7 +148,7 @@ impl LanguageInstaller for GoInstaller{
             &url,
             dest_path.clone(),
         )
-            .await
+        .await
         {
             Ok(v) => v,
             Err(e) => {
@@ -180,14 +184,14 @@ impl LanguageInstaller for GoInstaller{
         Ok(())
     }
 
-    async fn activate(&self, version: &str) -> Result<(), String>{
+    async fn activate(&self, version: &str) -> Result<(), String> {
         let current_file = self.get_base_dir().join("current");
 
         fs::write(current_file, version).map_err(|e| e.to_string())?;
 
         Ok(())
     }
-    async fn deactivate(&self, version: &str) -> Result<(), String>{
+    async fn deactivate(&self, version: &str) -> Result<(), String> {
         let current_version = get_language_current_path("go").unwrap_or_default();
 
         let current_file = self.get_base_dir().join("current");
@@ -200,12 +204,12 @@ impl LanguageInstaller for GoInstaller{
 
         Ok(())
     }
-    async fn uninstall(&self, version: &str) -> Result<(), String>{
+    async fn uninstall(&self, version: &str) -> Result<(), String> {
         del_language("go", version)?;
 
         Ok(())
     }
-    fn get_download_url(&self, version: &str) -> Result<String, String>{
+    fn get_download_url(&self, version: &str) -> Result<String, String> {
         let platform = self.get_platform();
         let arch = self.get_arch();
 
@@ -236,5 +240,4 @@ impl LanguageInstaller for GoInstaller{
 
         Ok(url)
     }
-
 }

@@ -1,9 +1,9 @@
+use flate2::read::GzDecoder;
 use std::fs::{self, File};
 use std::io;
 use std::path::{Path, PathBuf};
-use zip::ZipArchive;
-use flate2::read::GzDecoder;
 use tar::Archive;
+use zip::ZipArchive;
 
 #[allow(dead_code)]
 pub fn unzip_file(zip_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String> {
