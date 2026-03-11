@@ -227,7 +227,7 @@ impl LanguageInstaller for GoInstaller {
         };
 
         // 确定文件扩展名
-        let extension = match &go_platform[..] {
+        let extension = match go_platform {
             "windows" => "zip",
             _ => "tar.gz",
         };
