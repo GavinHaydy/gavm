@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use tauri::Wry;
 
 pub mod python;
+pub mod go;
 
 #[async_trait]
 pub trait LanguageInstaller {

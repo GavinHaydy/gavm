@@ -2,6 +2,8 @@ use std::fs::{self, File};
 use std::io;
 use std::path::{Path, PathBuf};
 use zip::ZipArchive;
+use flate2::read::GzDecoder;
+use tar::Archive;
 
 #[allow(dead_code)]
 pub fn unzip_file(zip_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String> {
@@ -26,6 +28,21 @@ pub fn unzip_file(zip_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String>
             io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
         }
     }
+
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn untar_file(tar_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String> {
+    let file = File::open(tar_path).map_err(|e| e.to_string())?;
+    let gz_decoder = GzDecoder::new(file);
+    let mut archive = Archive::new(gz_decoder);
+
+    fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
+
+    archive
+        .unpack(dest_path)
+        .map_err(|e| format!("Failed to extract tar.gz: {}", e))?;
 
     Ok(())
 }

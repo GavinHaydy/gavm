@@ -3,6 +3,7 @@
 
 use crate::core::dto::{PageResult, VersionInfo};
 use crate::core::language::{python::PythonInstaller, LanguageInstaller};
+use crate::core::language::go::GoInstaller;
 use tauri::{Window, Wry};
 
 pub struct LanguageManager {
@@ -14,6 +15,9 @@ impl LanguageManager {
         match language.as_str() {
             "python" => Ok(Self {
                 installer: Box::new(PythonInstaller::new()),
+            }),
+            "go" => Ok(Self {
+                installer: Box::new(GoInstaller::new()),
             }),
             _ => Err("Unsupported language".into()),
         }
