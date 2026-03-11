@@ -1,0 +1,3 @@
+.download-center-drawer :where(.ant-drawer-section) {
+  margin: 0;
+}

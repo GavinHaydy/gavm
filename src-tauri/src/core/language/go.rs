@@ -2,7 +2,7 @@
 // Python installer implementation
 
 use crate::core::common::error::io_err;
-use crate::core::installers::extract::unzip_file;
+use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
     del_language, get_config_bool, get_dirs, get_language_current_path,
@@ -10,21 +10,22 @@ use crate::core::utils::config::{
 use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
 use regex::Regex;
-use reqwest;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 use tauri::Wry;
 
-pub struct PythonInstaller;
+pub struct GoInstaller;
 
-impl PythonInstaller {
+impl GoInstaller {
     pub fn new() -> Self {
         Self
     }
 
-    // Get current platform identifier
-    #[allow(dead_code)]
+    fn get_base_url(&self) -> &'static str {
+        "https://go.dev/dl/"
+    }
+
     fn get_platform(&self) -> String {
         #[cfg(target_os = "windows")]
         {
@@ -44,8 +45,6 @@ impl PythonInstaller {
         }
     }
 
-    // Get architecture identifier
-    #[allow(dead_code)]
     fn get_arch(&self) -> String {
         #[cfg(target_arch = "x86_64")]
         {
@@ -61,49 +60,59 @@ impl PythonInstaller {
         }
     }
 
-    // Get base directory
     fn get_base_dir(&self) -> PathBuf {
-        shim::get_base_path().join("python")
+        shim::get_base_path().join("go")
     }
 }
-
 #[async_trait]
-impl LanguageInstaller for PythonInstaller {
+impl LanguageInstaller for GoInstaller {
     async fn list_versions(&self) -> Result<Vec<String>, String> {
-        // Fetch version numbers from official Python FTP server
-        let url = "https://www.python.org/ftp/python/";
+        let client = reqwest::Client::new();
 
-        let html = reqwest::get(url)
+        let html = client
+            .get(self.get_base_url())
+            .timeout(std::time::Duration::from_secs(10))
+            .header("User-Agent", "LVM-Language-Version-Manager")
+            .send()
             .await
-            .map_err(|e| e.to_string())?
+            .map_err(|e| {
+                format!(
+                    "Failed to fetch Go versions from {}: {}",
+                    self.get_base_url(),
+                    e
+                )
+            })?
             .text()
             .await
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| format!("Failed to parse HTML response: {}", e))?;
 
-        // Regex to match Python version directories (e.g., 3.10.0)
-        let re = Regex::new(r#"href="(\d+\.\d+\.\d+)/""#).map_err(|e| e.to_string())?;
+        let re = Regex::new(r#"/dl/go(\d+\.\d+(?:\.\d+)?)[^"]*\.(zip|tar\.gz)"#)
+            .map_err(|e| e.to_string())?;
 
         let mut versions = Vec::new();
 
         for cap in re.captures_iter(&html) {
             let version = cap[1].to_string();
-            // Filter to only include Python 3 versions
-            if version.starts_with("3.") {
+            if version.starts_with("1.") {
                 versions.push(version);
             }
         }
 
-        // Sort versions in descending order
+        versions.sort();
+        versions.dedup();
         sort_versions_desc(&mut versions);
 
         Ok(versions)
     }
-
     async fn list_installed(&self) -> Result<Vec<String>, String> {
         let dir = self.get_base_dir();
+
+        if !dir.exists() {
+            return Ok(vec![]);
+        }
+
         get_dirs(&dir).map_err(|e| e.to_string())
     }
-
     async fn current(&self) -> Result<Option<String>, String> {
         let path = self.get_base_dir().join("current");
 
@@ -121,14 +130,18 @@ impl LanguageInstaller for PythonInstaller {
         base_dir: &str,
         save_path: &str,
     ) -> Result<(), String> {
-        // 1. 获取 URL
         let url = self.get_download_url(version)?;
-        println!("url {}", url);
 
-        // 2. 确定本地路径
-        let dest_path = PathBuf::from(save_path).join(format!("python-{}.zip", version));
+        let extension = if url.ends_with(".zip") {
+            "zip"
+        } else if url.ends_with(".tar.gz") {
+            "tar.gz"
+        } else {
+            return Err("Unsupported file format".into());
+        };
 
-        // 3. 调用通用下载器（流式下载 + 进度回传）
+        let dest_path = PathBuf::from(save_path).join(format!("go-{}.{}", version, extension));
+
         match crate::core::installers::downloader::Downloader::download_with_progress(
             window,
             version,
@@ -144,17 +157,26 @@ impl LanguageInstaller for PythonInstaller {
             }
         };
 
-        // 4. 下载完成后，继续执行解压逻辑...
-        // self.extract(&dest_path, ...).await?;
-        let extract_path = PathBuf::from(base_dir).join("python").join(version);
+        // 5. 根据文件格式选择解压方式
+        let extract_path = PathBuf::from(base_dir).join("go").join(version);
         println!("extract_path {:?}", extract_path);
-        unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
 
-        // 创建或修改current 根据配置来
-        let current = PathBuf::from(base_dir).join("python").join("current");
+        match extension {
+            "zip" => {
+                unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
+            }
+            "tar.gz" => {
+                untar_file(&dest_path, &extract_path).expect("TODO: untar Error");
+            }
+            _ => {
+                return Err("Unsupported file format".into());
+            }
+        }
+
+        // 6. 设置当前版本
+        let current = PathBuf::from(base_dir).join("go").join("current");
         let auto_activite = get_config_bool("autoActivate", false);
 
-        // 不存在或开启自动切换
         if !current.exists() || auto_activite {
             let _ = fs::write(current, version).map_err(io_err);
         }
@@ -169,9 +191,8 @@ impl LanguageInstaller for PythonInstaller {
 
         Ok(())
     }
-
     async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current_version = get_language_current_path("python").unwrap_or_default();
+        let current_version = get_language_current_path("go").unwrap_or_default();
 
         let current_file = self.get_base_dir().join("current");
 
@@ -183,35 +204,40 @@ impl LanguageInstaller for PythonInstaller {
 
         Ok(())
     }
-
     async fn uninstall(&self, version: &str) -> Result<(), String> {
-        del_language("python", version)?;
+        del_language("go", version)?;
 
         Ok(())
     }
-
     fn get_download_url(&self, version: &str) -> Result<String, String> {
         let platform = self.get_platform();
         let arch = self.get_arch();
 
-        let url = match platform.as_str() {
-            "windows" => {
-                let arch_suffix = if arch == "x86_64" { "amd64" } else { "win32" };
-                format!(
-                    "https://www.python.org/ftp/python/{}/python-{}-embed-{}.zip",
-                    version, version, arch_suffix
-                )
-            }
-            "macos" => format!(
-                "https://www.python.org/ftp/python/{}/python-{}-macosx11.0.pkg",
-                version, version
-            ),
-            "linux" => format!(
-                "https://www.python.org/ftp/python/{}/Python-{}.tgz",
-                version, version
-            ),
-            _ => return Err("Unsupported platform".into()),
+        let go_arch = match arch.as_str() {
+            "x86_64" => "amd64",
+            "arm64" => "arm64",
+            _ => return Err(format!("Unsupported architecture: {}", arch)),
         };
+
+        let go_platform = match platform.as_str() {
+            "windows" => "windows",
+            "macos" => "darwin",
+            "linux" => "linux",
+            _ => return Err(format!("Unsupported platform: {}", platform)),
+        };
+
+        // 确定文件扩展名
+        let extension = match go_platform {
+            "windows" => "zip",
+            _ => "tar.gz",
+        };
+
+        // 构建下载 URL
+        let url = format!(
+            "https://go.dev/dl/go{}.{}-{}.{}",
+            version, go_platform, go_arch, extension
+        );
+
         Ok(url)
     }
 }

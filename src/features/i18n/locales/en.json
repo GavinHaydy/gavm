@@ -30,11 +30,11 @@
   "table": {
     "version": "Version",
     "install_status": "Install Status",
-    "use_status": "Use Status",
+    "use_status": "Activate Status",
     "install": "Install",
     "uninstall": "Uninstall",
-    "use": "Use",
-    "used": "Used"
+    "use": "Activate",
+    "used": "Cancel"
   },
   "search": {
     "placeholder": "Input search version",

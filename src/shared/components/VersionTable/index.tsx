@@ -1,6 +1,6 @@
 import type { TableProps } from 'antd';
 import { Table, Input, Button } from 'antd';
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { CommandEnum, InstallStatusEnum } from '@/core/constants/enum';
@@ -28,20 +28,16 @@ export const VersionTable: React.FC<VersionTableProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  });
-
   const onInstallToggle = async (record: VersionItem) => {
-    const command = record.install_status
+    const command = record.installStatus
       ? InstallStatusEnum.UNINSTALLED
       : InstallStatusEnum.INSTALLED;
     await handleVersionAction?.(command, record);
   };
 
   const onUseToggle = async (record: VersionItem) => {
-    await handleVersionAction?.(CommandEnum.USE_VERSION, record);
+    const command = record.useStatus ? CommandEnum.UNUSE_VERSION : CommandEnum.USE_VERSION;
+    await handleVersionAction?.(command, record);
   };
 
   const columns: TableProps<VersionItem>['columns'] = [
@@ -51,27 +47,27 @@ export const VersionTable: React.FC<VersionTableProps> = ({
     },
     {
       title: t('table.install_status'),
-      dataIndex: 'install_status',
+      dataIndex: 'installStatus',
       render: (_, record) => (
         <Button
           className="table-button"
           type="primary"
-          danger={record.install_status}
+          danger={record.installStatus}
           onClick={() => onInstallToggle?.(record)}
         >
-          {record.install_status ? t('table.uninstall') : t('table.install')}
+          {record.installStatus ? t('table.uninstall') : t('table.install')}
         </Button>
       ),
     },
     {
       title: t('table.use_status'),
-      dataIndex: 'use_status',
+      dataIndex: 'useStatus',
       render: (_, record) => (
         <Button
-          type={record.use_status ? 'primary' : 'default'}
+          type={record.useStatus ? 'primary' : 'default'}
           onClick={() => onUseToggle?.(record)}
         >
-          {record.use_status ? t('table.used') : t('table.use')}
+          {record.useStatus ? t('table.used') : t('table.use')}
         </Button>
       ),
     },
@@ -98,20 +94,16 @@ export const VersionTable: React.FC<VersionTableProps> = ({
         columns={columns}
         rowKey={record => record.version}
         loading={loading}
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', y: 'calc(100vh - 200px)' }}
         pagination={{
           total: data.total,
-          current: pagination.current,
-          pageSize: pagination.pageSize,
+          current: data.page + 1,
+          pageSize: data.pageSize,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50'],
         }}
         onChange={pagination => {
           handlePageChange((pagination.current || 1) - 1, pagination.pageSize || 10);
-          setPagination({
-            current: pagination.current || 1,
-            pageSize: pagination.pageSize || 10,
-          });
         }}
       />
     </>

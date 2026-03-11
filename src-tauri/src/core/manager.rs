@@ -2,6 +2,7 @@
 // Language manager responsible for orchestration
 
 use crate::core::dto::{PageResult, VersionInfo};
+use crate::core::language::go::GoInstaller;
 use crate::core::language::{python::PythonInstaller, LanguageInstaller};
 use tauri::{Window, Wry};
 
@@ -14,6 +15,9 @@ impl LanguageManager {
         match language.as_str() {
             "python" => Ok(Self {
                 installer: Box::new(PythonInstaller::new()),
+            }),
+            "go" => Ok(Self {
+                installer: Box::new(GoInstaller::new()),
             }),
             _ => Err("Unsupported language".into()),
         }
@@ -84,8 +88,12 @@ impl LanguageManager {
             .await
     }
 
-    pub async fn use_version(&self, version: &str) -> Result<(), String> {
-        self.installer.use_version(version).await
+    pub async fn activate(&self, version: &str) -> Result<(), String> {
+        self.installer.activate(version).await
+    }
+
+    pub async fn deactivate(&self, version: &str) -> Result<(), String> {
+        self.installer.deactivate(version).await
     }
 
     pub async fn uninstall(&self, version: &str) -> Result<(), String> {

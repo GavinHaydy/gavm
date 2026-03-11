@@ -7,16 +7,17 @@ export enum CommandEnum {
   UPDATE_CONFIG = 'update_configs',
   GET_CONFIG_VALUES = 'get_config_values',
   LIST_VERSIONS = 'list_versions',
-  USE_VERSION = 'use_version',
-  BASE_PATH = 'base_path',
-  DOWNLOAD_PATH = 'download_path',
-  VERSIONS_PATH = 'versions_path',
-  AUTO_ACTIVATE = 'auto_activate',
+  USE_VERSION = 'activate',
+  UNUSE_VERSION = 'deactivate',
+  DOWNLOAD_VERSION = 'download_version',
+  DOWNLOAD_PATH = 'downloadPath',
+  VERSIONS_PATH = 'versionsPath',
+  AUTO_ACTIVATE = 'autoActivate',
 }
 
 export enum InstallStatusEnum {
   INSTALLED = 'install',
-  UNINSTALLED = 'not_installed',
+  UNINSTALLED = 'uninstall',
 }
 
 export enum LanguageEnum {

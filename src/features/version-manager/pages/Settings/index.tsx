@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import { safeInvoke } from '@/api/tauri.ts';
 import { CommandEnum } from '@/core/constants/enum.ts';
-import { keysToCamel } from '@/shared/utils/common';
 
 export const Settings = () => {
   const { t } = useTranslation();
@@ -13,20 +12,17 @@ export const Settings = () => {
 
   useEffect(() => {
     const init = async () => {
-      const configData = await safeInvoke<Record<string, boolean | string>>(
-        CommandEnum.GET_CONFIG_VALUES,
-        {
-          keys: [CommandEnum.VERSIONS_PATH, CommandEnum.DOWNLOAD_PATH, CommandEnum.AUTO_ACTIVATE],
-        },
-      );
-
-      const { versionsPath, downloadPath, autoActivate } = keysToCamel(configData);
+      const { versionsPath, downloadPath, autoActivate } = await safeInvoke<
+        Record<string, boolean | string>
+      >(CommandEnum.GET_CONFIG_VALUES, {
+        keys: [CommandEnum.VERSIONS_PATH, CommandEnum.DOWNLOAD_PATH, CommandEnum.AUTO_ACTIVATE],
+      });
 
       form.setFieldsValue({
-        newValues: {
-          download_path: downloadPath,
-          versions_path: versionsPath,
-          auto_activate: autoActivate,
+        req: {
+          versionsPath,
+          downloadPath,
+          autoActivate,
         },
       });
     };
@@ -46,16 +42,16 @@ export const Settings = () => {
   return (
     <Card title={t('settings.title')}>
       <Form form={form} layout="vertical" onFinish={handleSave}>
-        <Form.Item name={['newValues', 'download_path']} label={t('settings.download_path')}>
+        <Form.Item name={['req', 'downloadPath']} label={t('settings.download_path')}>
           <Input />
         </Form.Item>
 
-        <Form.Item name={['newValues', 'versions_path']} label={t('settings.versions_path')}>
+        <Form.Item name={['req', 'versionsPath']} label={t('settings.versions_path')}>
           <Input />
         </Form.Item>
 
         <Form.Item
-          name={['newValues', 'auto_activate']}
+          name={['req', 'autoActivate']}
           label={t('settings.auto_activate')}
           valuePropName="checked"
         >

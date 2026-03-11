@@ -1,7 +1,6 @@
 // src/router/index.tsx
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { BasicLayout } from '@/app/layouts/BasicLayout';
-import { DownloadCenter } from '@/features/version-manager/pages/DownloadCenter';
 import { PythonManagePage } from '@/features/version-manager/pages/PythonManagePage';
 import { GoManagePage } from '@/features/version-manager/pages/Go';
 import { Settings } from '@/features/version-manager/pages/Settings';
@@ -45,14 +44,6 @@ export const routes: AppRouteObject[] = [
         meta: {
           label: 'nav.settings',
           icon: 'SettingOutlined',
-        },
-      },
-      {
-        path: 'downloader',
-        element: <DownloadCenter />,
-        meta: {
-          label: 'nav.downloader',
-          icon: 'icon-downloader',
         },
       },
       // 2. 在这里添加 Go 路由
