@@ -2,16 +2,17 @@
 
 ## 项目概述
 
-LVM 是一个基于 Tauri + React + TypeScript 的跨平台语言版本管理器应用程序。该项目旨在为开发者提供一个统一的管理界面，用于安装、切换和管理不同编程语言的版本（目前主要支持 Python，架构设计已预留支持 Go、Node.js、Rust 等语言的扩展能力）。
+LVM 是一个基于 Tauri + React + TypeScript 的跨平台语言版本管理器应用程序。该项目旨在为开发者提供一个统一的管理界面，用于安装、切换和管理不同编程语言的版本（当前支持 Python 和 Go，架构设计已预留支持 Java、JavaScript、Rust、V、Zig 等语言的扩展能力）。
 
 ### 核心功能
 
-- **版本管理**: 查看、安装、卸载、切换不同版本的编程语言
+- **版本管理**: 查看、安装、卸载、激活、停用不同版本的编程语言
 - **搜索过滤**: 支持按关键词搜索和过滤可用版本
-- **下载管理**: 实时显示下载进度，支持批量下载任务管理
-- **配置管理**: 支持自定义基础路径和下载路径设置
-- **进度追踪**: 实时下载进度推送，优化前端渲染性能（1% 间隔更新）
+- **下载管理**: 实时显示下载进度，支持批量下载任务管理，抽屉式下载中心 UI
+- **配置管理**: 支持自定义基础路径、下载路径、版本路径和自动激活设置
+- **进度追踪**: 实时下载进度推送，优化前端渲染性能（200ms 间隔节流更新）
 - **Mock 模式**: 支持开发模式下的数据模拟，便于前端独立开发和测试
+- **Shim 管理**: 自动安装和管理语言版本的快捷方式（Shim）
 
 ### 核心技术栈
 
@@ -32,6 +33,14 @@ LVM 是一个基于 Tauri + React + TypeScript 的跨平台语言版本管理器
 - **Reqwest 0.13.2** - HTTP 客户端（用于下载语言版本）
 - **Serde 1** - 序列化/反序列化
 - **Tauri Plugin Store 2.4.2** - 持久化存储
+- **zip 8.1.0** - ZIP 文件解压
+- **flate2 1.0** - Gzip 压缩支持
+- **tar 0.4** - TAR 文件解压
+- **async-trait 0.1** - 异步 Trait 支持
+- **regex 1** - 正则表达式处理
+- **futures-util 0.3** - 异步工具函数
+- **dirs 6.0.0** - 系统目录路径获取
+- **shim** - 本地 crate，用于管理版本快捷方式
 
 ### 项目架构
 
@@ -46,13 +55,13 @@ src/
 │   │       ├── index.tsx  # 布局组件
 │   │       └── Sider.tsx  # 侧边栏导航
 │   └── routes/            # 路由配置
-│       └── index.tsx      # 路由定义（/, /python, /settings, /downloader）
+│       └── index.tsx      # 路由定义（/, /python, /go, /settings 等）
 ├── api/                   # API 调用层
 │   └── tauri.ts           # Tauri 命令调用封装（safeInvoke，支持 Mock 模式）
 ├── core/                  # 核心配置和类型
 │   ├── config/            # 配置文件
 │   │   └── env.ts         # 环境配置（API_MODE）
-│   ├── constants/         # 常量定义（如语言枚举 LangEnum）
+│   ├── constants/         # 常量定义（语言枚举 LangEnum, 命令枚举 CommandEnum 等）
 │   └── types/             # TypeScript 类型定义
 │       └── common.ts      # ISearchPayload 等通用类型
 ├── features/              # 功能模块
@@ -63,10 +72,12 @@ src/
 │   │   ├── ThemeProvider.tsx
 │   │   └── themeSlice.ts  # Redux 切片
 │   └── version-manager/   # 版本管理功能
+│       ├── components/    # 版本管理组件
+│       │   └── DownloadCenter/  # 下载管理中心（Drawer 组件）
 │       └── pages/         # 页面组件
 │           ├── PythonManagePage/  # Python 版本管理主页
-│           ├── Settings/          # 全局设置页面（使用 Form 组件）
-│           └── DownloadCenter/    # 下载管理中心
+│           ├── GoManagePage/      # Go 版本管理主页
+│           └── Settings/          # 全局设置页面（使用 Form 组件）
 ├── hooks/                 # 自定义 React Hooks
 │   └── useDownload.ts     # 下载任务管理 Hook
 ├── mock/                  # Mock 数据和处理器（开发模式）
@@ -91,22 +102,33 @@ src/
 ```
 src-tauri/src/
 ├── main.rs                # 应用入口，调用 lib.rs::run()
-├── lib.rs                 # 库入口，注册 Tauri 命令和插件
+├── lib.rs                 # 库入口，注册 Tauri 命令和插件，初始化 Shim
 ├── commands.rs            # Tauri 命令层（前后端桥接）
 │   ├── list_versions      # 获取版本列表（支持搜索）
-│   └── install            # 安装版本（带进度推送）
+│   ├── install            # 安装版本（带进度推送）
+│   ├── activate           # 激活指定版本
+│   ├── deactivate         # 停用指定版本
+│   ├── uninstall          # 卸载指定版本
+│   ├── get_config_values  # 批量获取配置值
+│   └── update_configs     # 更新配置
 └── core/                  # 核心业务逻辑
     ├── manager.rs         # 语言管理器（统一接口）
-    ├── dto.rs             # 数据传输对象（VersionInfo, PageResult）
+    ├── dto.rs             # 数据传输对象（VersionInfo, PageResult, UpdateConfigReq）
+    ├── common/            # 公共模块
+    │   ├── mod.rs         # 模块定义
+    │   ├── error.rs       # 错误处理
+    │   └── response.rs    # 统一 API 响应格式（ApiResponse）
     ├── language/          # 语言模块
     │   ├── mod.rs         # Trait 定义（LanguageInstaller）
-    │   └── python.rs      # Python 实现
+    │   ├── python.rs      # Python 实现
+    │   └── go.rs          # Go 实现
     ├── installers/        # 安装工具
     │   ├── mod.rs         # 安装器模块
-    │   └── downloader.rs  # 下载器（带进度推送，1% 间隔优化）
+    │   ├── downloader.rs  # 下载器（带进度推送）
+    │   └── extract.rs     # 解压工具（支持 zip 和 tar.gz）
     └── utils/             # 工具函数
         ├── mod.rs         # 工具模块
-        ├── config.rs      # 配置管理（base_path, download_path）
+        ├── config.rs      # 配置管理（base_path, download_path, versions_path）
         └── semver.rs      # 语义化版本处理
 ```
 
@@ -348,7 +370,7 @@ f007d45 fix: fmt errs
 import { safeInvoke } from '@/api/tauri';
 
 const result = await safeInvoke<VersionResult>('list_versions', {
-  language: 'python',
+  language: 'python',  // 或 'go'
   page: 0,
   pageSize: 10,
   keyWord: '3.9'  // 可选搜索关键词
@@ -358,7 +380,7 @@ const result = await safeInvoke<VersionResult>('list_versions', {
 **后端实现**:
 1. `commands.rs::list_versions` - 接收前端请求，包含搜索关键词参数
 2. `manager.rs::LanguageManager::list_versions` - 根据语言类型创建对应安装器
-3. `language/python.rs::PythonInstaller::list_versions` - 获取所有可用版本并过滤
+3. `language/python.rs::PythonInstaller::list_versions` 或 `language/go.rs::GoInstaller::list_versions` - 获取所有可用版本并过滤
 4. 返回 `PageResult` 结构（包含总数和分页列表）
 
 ### 安装版本（带进度推送）
@@ -368,7 +390,7 @@ const result = await safeInvoke<VersionResult>('list_versions', {
 import { safeInvoke } from '@/api/tauri';
 
 await safeInvoke('install', {
-  language: 'python',
+  language: 'python',  // 或 'go'
   version: '3.9.7'
 });
 ```
@@ -377,14 +399,35 @@ await safeInvoke('install', {
 ```typescript
 import { listen } from '@tauri-apps/api/event';
 
-const unlisten = listen<{
+// 监听下载进度
+const progressListener = listen<{
+  language: string;
   version: string;
-  current: u64;
-  total: u64;
-  percentage: f64;
+  current: number;
+  total: number;
+  percentage: number;
 }>('download-progress', (event) => {
-  const { version, percentage } = event.payload;
+  const { language, version, percentage } = event.payload;
   // 更新 UI 显示下载进度
+  // 前端使用 200ms 节流优化，避免频繁渲染
+});
+
+// 监听下载完成
+const completeListener = listen<{
+  language: string;
+  version: string;
+  path: string;
+}>('download-complete', (event) => {
+  // 处理下载完成
+});
+
+// 监听下载失败
+const errorListener = listen<{
+  language: string;
+  version: string;
+  message: string;
+}>('download-error', (event) => {
+  // 处理下载失败
 });
 ```
 
@@ -392,7 +435,51 @@ const unlisten = listen<{
 1. `commands.rs::install` - 接收安装请求，注入 AppHandle 和 Window
 2. `config.rs::get_download_path` - 获取下载路径（从配置或默认值）
 3. `installers/downloader.rs::download_with_progress` - 下载文件并推送进度
-4. 进度优化: 每 1% 变化才发送事件，减轻前端渲染压力
+4. `installers/extract.rs` - 根据文件类型解压（zip 或 tar.gz）
+5. 进度优化: 前端使用 200ms 节流，后端发送 download-complete/download-error 事件
+
+### 激活/停用版本
+
+**前端调用**:
+```typescript
+import { safeInvoke } from '@/api/tauri';
+
+// 激活版本
+await safeInvoke('activate', {
+  language: 'python',  // 或 'go'
+  version: '3.9.7'
+});
+
+// 停用版本
+await safeInvoke('deactivate', {
+  language: 'python',  // 或 'go'
+  version: '3.9.7'
+});
+```
+
+**后端实现**:
+1. `commands.rs::activate` 或 `deactivate` - 接收请求
+2. `manager.rs::LanguageManager::activate` 或 `deactivate` - 调用对应安装器
+3. `language/python.rs` 或 `language/go.rs` - 更新 current 文件或符号链接
+4. 触发 Shim 重新安装（如果需要）
+
+### 卸载版本
+
+**前端调用**:
+```typescript
+import { safeInvoke } from '@/api/tauri';
+
+await safeInvoke('uninstall', {
+  language: 'python',  // 或 'go'
+  version: '3.9.7'
+});
+```
+
+**后端实现**:
+1. `commands.rs::uninstall` - 接收请求
+2. `manager.rs::LanguageManager::uninstall` - 调用对应安装器
+3. `language/python.rs` 或 `language/go.rs` - 删除版本目录
+4. `utils/config.rs::del_language` - 通用删除逻辑
 
 ### 配置管理
 
@@ -404,10 +491,36 @@ const store = new LazyStore('.settings.json');
 
 // 读取配置
 const basePath = await store.get<string>('base_path');
+const downloadPath = await store.get<string>('download_path');
+const versionsPath = await store.get<string>('versions_path');
+const autoActivate = await store.get<boolean>('autoActivate');
 
 // 保存配置
 await store.set('base_path', 'd:\\lvm');
+await store.set('download_path', 'd:\\lvm\\download');
+await store.set('versions_path', 'd:\\lvm\\versions');
+await store.set('autoActivate', true);
 await store.save(); // 持久化到硬盘
+```
+
+**批量获取配置**:
+```typescript
+import { safeInvoke } from '@/api/tauri';
+
+const config = await safeInvoke('get_config_values', {
+  keys: ['base_path', 'download_path', 'versions_path', 'autoActivate']
+});
+```
+
+**更新配置**:
+```typescript
+import { safeInvoke } from '@/api/tauri';
+
+await safeInvoke('update_configs', {
+  autoActivate: true,
+  downloadPath: 'd:\\lvm\\download',
+  versionsPath: 'd:\\lvm\\versions'
+});
 ```
 
 **后端配置读取** (`src-tauri/src/core/utils/config.rs`):
@@ -422,6 +535,17 @@ pub fn get_download_path(app: &AppHandle) -> PathBuf {
     }
 
     download_dir
+}
+
+pub fn get_versions_path(app: &AppHandle) -> PathBuf {
+    let base = get_base_path(app);
+    let versions_dir = base.join("versions");
+
+    if !versions_dir.exists() {
+        let _ = std::fs::create_dir_all(&versions_dir);
+    }
+
+    versions_dir
 }
 ```
 
@@ -459,21 +583,65 @@ export async function safeInvoke<T>(
 import { useDownload } from '@/hooks/useDownload';
 
 function DownloadCenter() {
-  const { tasks, startDownload } = useDownload();
+  const { tasks } = useDownload();
 
   // tasks: 下载任务列表
-  // startDownload: 开始下载函数
 }
 ```
 
 **功能特性**:
-- 自动监听 `download-progress` 事件
+- 自动监听 `download-progress` 事件（带 200ms 节流优化）
+- 自动监听 `download-complete` 事件
+- 自动监听 `download-error` 事件
 - 管理多个下载任务状态
 - 支持任务状态追踪（downloading/success/error）
 - 自动清理已完成任务
 
+**DownloadTask 接口**:
+```typescript
+interface DownloadTask {
+  language: string;
+  version: string;
+  percentage: number;
+  status: DownloadStatusEnum;  // SUCCESS | ERROR | DOWNLOADING
+}
+```
+
 ### 数据流
 
+**安装流程**:
+```
+用户点击安装 → React 组件 → safeInvoke('install') → Tauri Command → Rust Manager → Installer
+  ↓
+下载文件 → 进度推送（download-progress） → useDownload Hook → 更新 UI
+  ↓
+解压文件（zip/tar.gz） → 安装完成 → 事件推送（download-complete） → 更新 UI
+  ↓
+（可选）自动激活 → 更新 current 文件 → Shim 重新安装
+```
+
+**激活流程**:
+```
+用户点击激活 → React 组件 → safeInvoke('activate') → Tauri Command → Rust Manager → Installer
+  ↓
+更新 current 文件 → Shim 重新安装 → 返回成功 → 更新 UI
+```
+
+**停用流程**:
+```
+用户点击停用 → React 组件 → safeInvoke('deactivate') → Tauri Command → Rust Manager → Installer
+  ↓
+清空 current 文件 → Shim 重新安装 → 返回成功 → 更新 UI
+```
+
+**卸载流程**:
+```
+用户点击卸载 → React 组件 → safeInvoke('uninstall') → Tauri Command → Rust Manager → Installer
+  ↓
+删除版本目录 → 如果是当前版本则清空 current → Shim 重新安装 → 返回成功 → 更新 UI
+```
+
+**简化的数据流**:
 ```
 用户操作 → React 组件 → Custom Hook → Tauri Command → Rust Manager → Installer → 事件推送 → 更新 UI
 ```
@@ -483,23 +651,29 @@ function DownloadCenter() {
 **当前路由** (`src/app/routes/index.tsx`):
 - `/` - 重定向到 `/python`
 - `/python` - Python 版本管理页面
+- `/go` - Go 版本管理页面
+- `/java` - Java 版本管理页面（预留）
+- `/js` - JavaScript 版本管理页面（预留）
+- `/rust` - Rust 版本管理页面（预留）
+- `/v` - V 版本管理页面（预留）
+- `/zig` - Zig 版本管理页面（预留）
 - `/settings` - 全局设置页面
-- `/downloader` - 下载管理中心
 - 错误页面 - 自动错误边界处理
 
 ### 扩展新语言支持
 
-要添加对新语言的支持（例如 Go），需要:
+要添加对新语言的支持（例如 Java），需要:
 
 1. **后端**:
-   - 在 `src-tauri/src/core/language/` 创建 `go.rs`
+   - 在 `src-tauri/src/core/language/` 创建 `java.rs`
    - 实现 `LanguageInstaller` trait:
      ```rust
-     pub struct GoInstaller;
+     pub struct JavaInstaller;
 
-     impl LanguageInstaller for GoInstaller {
+     #[async_trait]
+     impl LanguageInstaller for JavaInstaller {
          async fn list_versions(&self) -> Result<Vec<String>, String> {
-             // 获取 Go 版本列表
+             // 获取 Java 版本列表
          }
          async fn list_installed(&self) -> Result<Vec<String>, String> {
              // 获取已安装版本
@@ -507,19 +681,54 @@ function DownloadCenter() {
          async fn current(&self) -> Result<Option<String>, String> {
              // 获取当前版本
          }
+         async fn install(&self, window: tauri::Window<Wry>, version: &str, base_dir: &str, save_path: &str) -> Result<(), String> {
+             // 安装逻辑
+         }
+         async fn activate(&self, version: &str) -> Result<(), String> {
+             // 激活逻辑
+         }
+         async fn deactivate(&self, version: &str) -> Result<(), String> {
+             // 停用逻辑
+         }
+         async fn uninstall(&self, version: &str) -> Result<(), String> {
+             // 卸载逻辑
+         }
      }
      ```
    - 在 `manager.rs` 的 `LanguageManager::new()` 中添加分支
 
 2. **前端**:
-   - 在 `src/core/constants/enum.ts` 添加语言枚举
-   - 在语言包中添加翻译（`en.json`, `zh.json`）
-   - 创建对应的管理页面（如 `GoManagePage`）
+   - 在 `src/core/constants/enum.ts` 的 `LanguageEnum` 中添加语言
+   - 在语言包中添加翻译（`en.json`, `zh.json` 的 `nav.*` 和 `downloader.*`）
+   - 创建对应的管理页面（如 `JavaManagePage`）
    - 更新路由配置和侧边栏导航
 
 3. **API 封装**:
    - 复用 `safeInvoke` 函数调用 Tauri 命令
    - 复用 `VersionTable` 组件展示版本列表
+
+**已实现的语言**:
+- Python (`python.rs`) - 完整支持
+- Go (`go.rs`) - 完整支持
+
+**已预留的路由（待实现）**:
+- Java (`/java`)
+- JavaScript (`/js`)
+- Rust (`/rust`)
+- V (`/v`)
+- Zig (`/zig`)
+
+### Shim 安装
+
+**作用**: 在应用启动时自动安装语言版本的快捷方式（Shim），使用户可以在命令行中直接调用不同版本的编程语言。
+
+**实现位置**: `src-tauri/src/lib.rs::init_shims()`
+
+**实现细节**:
+- 使用本地 `shim` crate（位于 `shim/` 目录）
+- 在 Tauri 应用的 `setup` 钩子中调用
+- 根据当前激活的语言版本自动更新 shim 链接
+- 支持多语言版本的快速切换
 
 ---
 
@@ -575,6 +784,31 @@ A:
 2. 在 `src/mock/handlers.ts` 中添加处理器映射
 3. 使用 `mockResponse()` 包装返回数据以支持延迟模拟
 
+### Q: Shim 安装失败怎么办?
+A: 检查:
+1. 应用是否有足够的权限创建快捷方式
+2. 检查 `shim/` 目录中的实现是否正确
+3. 查看控制台日志了解详细错误信息
+4. 确保 Tauri 应用的 setup 钩子正确调用
+
+### Q: 如何启用自动激活功能?
+A:
+1. 在设置页面中勾选"自动激活"选项
+2. 或通过 API 调用: `update_configs({ autoActivate: true })`
+3. 启用后，新安装的版本会自动成为当前激活版本
+
+### Q: 为什么下载进度更新很慢?
+A: 这是正常的优化行为：
+1. 前端使用 200ms 节流，避免频繁渲染
+2. 后端仍然实时更新下载进度
+3. UI 只在每 200ms 间隔更新一次，提升性能
+
+### Q: 支持哪些压缩格式?
+A: 当前支持:
+- `.zip` - 使用 `zip` crate 解压
+- `.tar.gz` - 使用 `tar` 和 `flate2` crate 解压
+- 安装器会自动根据文件扩展名选择正确的解压方式
+
 ---
 
 ## 项目特定配置
@@ -600,6 +834,15 @@ A:
 - 开发命令前: `bun run dev`
 - 构建命令前: `bun run build`
 
+### Tauri 依赖 (`src-tauri/Cargo.toml`)
+- **核心依赖**: tauri, tauri-plugin-opener, serde, serde_json
+- **异步运行时**: tokio (full features)
+- **HTTP 客户端**: reqwest (json, stream features)
+- **持久化存储**: tauri-plugin-store
+- **解压工具**: zip, flate2, tar
+- **工具库**: once_cell, async-trait, regex, futures-util, dirs
+- **本地 crate**: shim（用于版本快捷方式管理）
+
 ### Tauri Store Plugin 配置
 - **用途**: 持久化存储用户配置（如 base_path, download_path）
 - **配置文件**: `.settings.json`（前端） / `.settings.dat`（后端）
@@ -617,6 +860,23 @@ A:
 ---
 
 ## 关键组件说明
+
+### DownloadCenter 组件 (`src/features/version-manager/components/DownloadCenter/index.tsx`)
+**功能**: 下载管理中心抽屉组件
+**特性**:
+- 使用 Ant Design Drawer 组件
+- 实时显示下载任务列表
+- 显示下载进度条和状态标签
+- 支持三种状态：downloading、success、error
+- 国际化支持（snake_case keys）
+
+**Props 接口**:
+```typescript
+interface DownloadCenterProps {
+  onClose: () => void;    // 关闭抽屉回调
+  visible: boolean;        // 抽屉可见状态
+}
+```
 
 ### VersionTable 组件 (`src/shared/components/VersionTable.tsx`)
 **功能**: 统一的版本表格展示组件
@@ -642,7 +902,8 @@ interface VersionTableProps {
 ### useDownload Hook (`src/hooks/useDownload.ts`)
 **功能**: 管理下载任务和进度
 **特性**:
-- 自动监听下载进度事件
+- 自动监听下载进度事件（带 200ms 节流）
+- 自动监听下载完成和失败事件
 - 管理多个并发下载任务
 - 提供任务状态追踪
 
@@ -650,7 +911,6 @@ interface VersionTableProps {
 ```typescript
 {
   tasks: DownloadTask[];      // 下载任务列表
-  startDownload: (language: string, version: string) => void;  // 开始下载
 }
 ```
 

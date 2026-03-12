@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { listen } from '@tauri-apps/api/event';
 import { useState, useEffect } from 'react';
+
+import { DownloadStatusEnum } from '@/core/constants/enum';
 
 export interface DownloadTask {
   language: string;
   version: string;
   percentage: number;
-  status: 'downloading' | 'success' | 'error';
+  status: DownloadStatusEnum;
 }
 
 export const useDownload = () => {
@@ -34,7 +37,7 @@ export const useDownload = () => {
           language,
           version,
           percentage: Math.floor(percentage),
-          status: 'downloading',
+          status: DownloadStatusEnum.DOWNLOADING,
         },
       }));
     });
@@ -53,7 +56,7 @@ export const useDownload = () => {
           language,
           version,
           percentage: 100,
-          status: 'success',
+          status: DownloadStatusEnum.SUCCESS,
         },
       }));
     });
@@ -72,7 +75,7 @@ export const useDownload = () => {
           language,
           version,
           percentage: prev[version]?.percentage || 0,
-          status: 'error',
+          status: DownloadStatusEnum.ERROR,
         },
       }));
     });

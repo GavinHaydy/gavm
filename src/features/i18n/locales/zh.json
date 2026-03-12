@@ -56,6 +56,7 @@
     "python_prefix": "Python",
     "completed": "已完成",
     "downloading": "下载中...",
-    "failed": "下载失败:"
+    "failed": "下载失败:",
+    "empty": "无下载任务"
   }
 }

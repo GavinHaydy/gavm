@@ -24,3 +24,9 @@ export enum LanguageEnum {
   PYTHON = 'python',
   GO = 'go',
 }
+
+export enum DownloadStatusEnum {
+  SUCCESS = 'success',
+  ERROR = 'error',
+  DOWNLOADING = 'downloading',
+}

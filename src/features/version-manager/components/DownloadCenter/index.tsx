@@ -1,12 +1,32 @@
 import { List, Progress, Badge, Space, Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { DownloadStatusEnum } from '@/core/constants/enum';
 import { useDownload } from '@/hooks/useDownload.ts';
 import './index.css';
+
+const statusMap: Record<DownloadStatusEnum, 'exception' | 'active' | 'success'> = {
+  [DownloadStatusEnum.ERROR]: 'exception',
+  [DownloadStatusEnum.DOWNLOADING]: 'active',
+  [DownloadStatusEnum.SUCCESS]: 'success',
+};
 
 export const DownloadCenter = ({ onClose, visible }: { onClose: () => void; visible: boolean }) => {
   const { tasks } = useDownload();
   const { t } = useTranslation();
+
+  const renderStatus = (status: DownloadStatusEnum) => {
+    switch (status) {
+      case DownloadStatusEnum.ERROR:
+        return <Badge status="error" text={t('downloader.failed')} />;
+      case DownloadStatusEnum.DOWNLOADING:
+        return <Badge status="processing" text={t('downloader.downloading')} />;
+      case DownloadStatusEnum.SUCCESS:
+        return <Badge status="success" text={t('downloader.completed')} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Drawer
@@ -28,25 +48,10 @@ export const DownloadCenter = ({ onClose, visible }: { onClose: () => void; visi
                   {item.language} {item.version}
                 </strong>
 
-                {item.status === 'success' ? (
-                  <Badge status="success" text={t('downloader.completed')} />
-                ) : item.status === 'error' ? (
-                  <Badge status="error" text={t('downloader.failed')} />
-                ) : (
-                  <Badge status="processing" text={t('downloader.downloading')} />
-                )}
+                {renderStatus(item.status)}
               </Space>
 
-              <Progress
-                percent={item.percentage}
-                status={
-                  item.status === 'success'
-                    ? 'success'
-                    : item.status === 'error'
-                      ? 'exception'
-                      : 'active'
-                }
-              />
+              <Progress percent={item.percentage} status={statusMap[item.status]} />
             </div>
           </List.Item>
         )}
