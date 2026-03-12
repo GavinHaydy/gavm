@@ -1,20 +1,20 @@
 // python.rs
 // Python installer implementation
 
+use crate::caches::python_cache::*;
 use crate::core::common::error::io_err;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
     del_language, get_config_bool, get_dirs, get_language_current_path,
 };
-use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
-use regex::Regex;
-use reqwest;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Wry;
+use tokio::fs as tokio_fs;
 
 pub struct PythonInstaller;
 
@@ -70,31 +70,45 @@ impl PythonInstaller {
 #[async_trait]
 impl LanguageInstaller for PythonInstaller {
     async fn list_versions(&self) -> Result<Vec<String>, String> {
-        // Fetch version numbers from official Python FTP server
-        let url = "https://www.python.org/ftp/python/";
+        let cache_path = dirs::home_dir()
+            .ok_or("无法获取 home 目录")?
+            .join(".lvm/cache/python.json");
 
-        let html = reqwest::get(url)
-            .await
-            .map_err(|e| e.to_string())?
-            .text()
-            .await
-            .map_err(|e| e.to_string())?;
+        // 如果缓存存在
+        if cache_path.exists() {
+            let data = tokio_fs::read(&cache_path)
+                .await
+                .map_err(|e| e.to_string())?;
 
-        // Regex to match Python version directories (e.g., 3.10.0)
-        let re = Regex::new(r#"href="(\d+\.\d+\.\d+)/""#).map_err(|e| e.to_string())?;
+            let cache: VersionCache = serde_json::from_slice(&data).map_err(|e| e.to_string())?;
 
-        let mut versions = Vec::new();
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
 
-        for cap in re.captures_iter(&html) {
-            let version = cap[1].to_string();
-            // Filter to only include Python 3 versions
-            if version.starts_with("3.") {
-                versions.push(version);
+            if now - cache.updated_at < CACHE_TTL {
+                return Ok(cache.versions);
             }
         }
 
-        // Sort versions in descending order
-        sort_versions_desc(&mut versions);
+        let versions = fetch_versions().await?;
+
+        let cache = VersionCache {
+            updated_at: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            versions: versions.clone(),
+        };
+
+        if let Some(p) = cache_path.parent() {
+            fs::create_dir_all(p).ok();
+        }
+
+        let data = serde_json::to_vec(&cache).unwrap();
+
+        tokio_fs::write(cache_path, data).await.ok();
 
         Ok(versions)
     }
@@ -199,17 +213,18 @@ impl LanguageInstaller for PythonInstaller {
             "windows" => {
                 let arch_suffix = if arch == "x86_64" { "amd64" } else { "win32" };
                 format!(
-                    "https://www.python.org/ftp/python/{}/python-{}-embed-{}.zip",
-                    version, version, arch_suffix
+                    "https://www.python.org/ftp/python/{v}/python-{v}-embed-{arch}.zip",
+                    v = version,
+                    arch = arch_suffix
                 )
             }
             "macos" => format!(
-                "https://www.python.org/ftp/python/{}/python-{}-macosx11.0.pkg",
-                version, version
+                "https://www.python.org/ftp/python/{v}/python-{v}-macosx11.0.pkg",
+                v = version
             ),
             "linux" => format!(
-                "https://www.python.org/ftp/python/{}/Python-{}.tgz",
-                version, version
+                "https://www.python.org/ftp/python/{v}/Python-{v}.tgz",
+                v = version
             ),
             _ => return Err("Unsupported platform".into()),
         };

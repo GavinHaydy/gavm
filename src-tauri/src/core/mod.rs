@@ -5,4 +5,5 @@ pub mod utils;
 
 pub mod installers;
 
+pub mod caches;
 pub mod common;
