@@ -3,6 +3,7 @@
 
 use crate::caches::python_cache::*;
 use crate::core::common::error::io_err;
+use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
@@ -208,24 +209,26 @@ impl LanguageInstaller for PythonInstaller {
     fn get_download_url(&self, version: &str) -> Result<String, String> {
         let platform = self.get_platform();
         let arch = self.get_arch();
+        let proxy = get_config_bool("proxy", false);
+
+        let domain = if proxy {
+            EDownload::PythonProxy
+        } else {
+            EDownload::Python
+        };
 
         let url = match platform.as_str() {
             "windows" => {
                 let arch_suffix = if arch == "x86_64" { "amd64" } else { "win32" };
                 format!(
-                    "https://www.python.org/ftp/python/{v}/python-{v}-embed-{arch}.zip",
+                    "{d}{v}/python-{v}-embed-{arch}.zip",
+                    d = domain,
                     v = version,
                     arch = arch_suffix
                 )
             }
-            "macos" => format!(
-                "https://www.python.org/ftp/python/{v}/python-{v}-macosx11.0.pkg",
-                v = version
-            ),
-            "linux" => format!(
-                "https://www.python.org/ftp/python/{v}/Python-{v}.tgz",
-                v = version
-            ),
+            "macos" => format!("{d}{v}/python-{v}-macosx11.0.pkg", d = domain, v = version),
+            "linux" => format!("{d}{v}/Python-{v}.tgz", d = domain, v = version),
             _ => return Err("Unsupported platform".into()),
         };
         Ok(url)

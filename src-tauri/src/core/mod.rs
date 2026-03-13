@@ -7,3 +7,4 @@ pub mod installers;
 
 pub mod caches;
 pub mod common;
+pub mod enums;

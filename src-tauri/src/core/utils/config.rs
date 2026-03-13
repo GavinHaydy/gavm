@@ -52,6 +52,7 @@ pub fn init_settings() -> PathBuf {
             "autoActivate": true,
             "downloadPath": base_dir.join("download"),
             "versionsPath": base_dir.join("versions"),
+            "proxy": false,
         });
 
         fs::write(
