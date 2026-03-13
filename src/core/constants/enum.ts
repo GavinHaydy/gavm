@@ -13,6 +13,7 @@ export enum CommandEnum {
   DOWNLOAD_PATH = 'downloadPath',
   VERSIONS_PATH = 'versionsPath',
   AUTO_ACTIVATE = 'autoActivate',
+  PROXY = 'proxy',
 }
 
 export enum InstallStatusEnum {

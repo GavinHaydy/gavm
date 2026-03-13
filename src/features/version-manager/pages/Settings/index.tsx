@@ -12,10 +12,15 @@ export const Settings = () => {
 
   useEffect(() => {
     const init = async () => {
-      const { versionsPath, downloadPath, autoActivate } = await safeInvoke<
+      const { versionsPath, downloadPath, autoActivate, proxy } = await safeInvoke<
         Record<string, boolean | string>
       >(CommandEnum.GET_CONFIG_VALUES, {
-        keys: [CommandEnum.VERSIONS_PATH, CommandEnum.DOWNLOAD_PATH, CommandEnum.AUTO_ACTIVATE],
+        keys: [
+          CommandEnum.VERSIONS_PATH,
+          CommandEnum.DOWNLOAD_PATH,
+          CommandEnum.AUTO_ACTIVATE,
+          CommandEnum.PROXY,
+        ],
       });
 
       form.setFieldsValue({
@@ -23,6 +28,7 @@ export const Settings = () => {
           versionsPath,
           downloadPath,
           autoActivate,
+          proxy,
         },
       });
     };
@@ -55,6 +61,10 @@ export const Settings = () => {
           label={t('settings.auto_activate')}
           valuePropName="checked"
         >
+          <Switch />
+        </Form.Item>
+
+        <Form.Item name={['req', 'proxy']} label={t('settings.proxy')} valuePropName="checked">
           <Switch />
         </Form.Item>
 

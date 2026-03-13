@@ -49,7 +49,8 @@
     "download_path": "Download Path",
     "versions_path": "Versions Path",
     "auto_activate": "Auto Activate",
-    "error": "Error"
+    "error": "Error",
+    "proxy": "Proxy"
   },
   "downloader": {
     "title": "Download Manager",

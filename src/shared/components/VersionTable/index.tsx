@@ -44,10 +44,12 @@ export const VersionTable: React.FC<VersionTableProps> = ({
     {
       title: t('table.version'),
       dataIndex: 'version',
+      width: 200,
     },
     {
       title: t('table.install_status'),
       dataIndex: 'installStatus',
+      align: 'center',
       render: (_, record) => (
         <Button
           className="table-button"
@@ -62,6 +64,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
     {
       title: t('table.use_status'),
       dataIndex: 'useStatus',
+      align: 'center',
       render: (_, record) => (
         <Button
           disabled={!record.installStatus}
