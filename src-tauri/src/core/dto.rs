@@ -32,3 +32,9 @@ pub struct UpdateConfigReq {
     #[serde(default)]
     pub versions_path: Option<String>,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct VersionCache {
+    pub updated_at: u64,
+    pub versions: Vec<String>,
+}

@@ -1,15 +1,14 @@
 // python.rs
 // Python installer implementation
 
+use crate::core::caches::go_cache::fetch_versions_go;
 use crate::core::common::error::io_err;
 use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
-    del_language, get_config_bool, get_dirs, get_language_current_path,
+    del_language, get_config_bool, get_dirs, get_language_current_path, versions_list,
 };
-use crate::core::utils::semver::sort_versions_desc;
 use async_trait::async_trait;
-use regex::Regex;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
@@ -22,9 +21,9 @@ impl GoInstaller {
         Self
     }
 
-    fn get_base_url(&self) -> &'static str {
-        "https://go.dev/dl/"
-    }
+    // fn get_base_url(&self) -> &'static str {
+    //     "https://go.dev/dl/"
+    // }
 
     fn get_platform(&self) -> String {
         #[cfg(target_os = "windows")]
@@ -67,40 +66,7 @@ impl GoInstaller {
 #[async_trait]
 impl LanguageInstaller for GoInstaller {
     async fn list_versions(&self) -> Result<Vec<String>, String> {
-        let client = reqwest::Client::new();
-
-        let html = client
-            .get(self.get_base_url())
-            .timeout(std::time::Duration::from_secs(10))
-            .header("User-Agent", "LVM-Language-Version-Manager")
-            .send()
-            .await
-            .map_err(|e| {
-                format!(
-                    "Failed to fetch Go versions from {}: {}",
-                    self.get_base_url(),
-                    e
-                )
-            })?
-            .text()
-            .await
-            .map_err(|e| format!("Failed to parse HTML response: {}", e))?;
-
-        let re = Regex::new(r#"/dl/go(\d+\.\d+(?:\.\d+)?)[^"]*\.(zip|tar\.gz)"#)
-            .map_err(|e| e.to_string())?;
-
-        let mut versions = Vec::new();
-
-        for cap in re.captures_iter(&html) {
-            let version = cap[1].to_string();
-            if version.starts_with("1.") {
-                versions.push(version);
-            }
-        }
-
-        versions.sort();
-        versions.dedup();
-        sort_versions_desc(&mut versions);
+        let versions = versions_list("go", fetch_versions_go).await?;
 
         Ok(versions)
     }

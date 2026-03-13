@@ -7,15 +7,13 @@ use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
-    del_language, get_config_bool, get_dirs, get_language_current_path,
+    del_language, get_config_bool, get_dirs, get_language_current_path, versions_list,
 };
 use async_trait::async_trait;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Wry;
-use tokio::fs as tokio_fs;
 
 pub struct PythonInstaller;
 
@@ -71,45 +69,7 @@ impl PythonInstaller {
 #[async_trait]
 impl LanguageInstaller for PythonInstaller {
     async fn list_versions(&self) -> Result<Vec<String>, String> {
-        let cache_path = dirs::home_dir()
-            .ok_or("无法获取 home 目录")?
-            .join(".lvm/cache/python.json");
-
-        // 如果缓存存在
-        if cache_path.exists() {
-            let data = tokio_fs::read(&cache_path)
-                .await
-                .map_err(|e| e.to_string())?;
-
-            let cache: VersionCache = serde_json::from_slice(&data).map_err(|e| e.to_string())?;
-
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
-
-            if now - cache.updated_at < CACHE_TTL {
-                return Ok(cache.versions);
-            }
-        }
-
-        let versions = fetch_versions().await?;
-
-        let cache = VersionCache {
-            updated_at: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-            versions: versions.clone(),
-        };
-
-        if let Some(p) = cache_path.parent() {
-            fs::create_dir_all(p).ok();
-        }
-
-        let data = serde_json::to_vec(&cache).unwrap();
-
-        tokio_fs::write(cache_path, data).await.ok();
+        let versions = versions_list("python", fetch_versions_python).await?;
 
         Ok(versions)
     }
