@@ -31,6 +31,9 @@ pub struct UpdateConfigReq {
 
     #[serde(default)]
     pub versions_path: Option<String>,
+
+    #[serde(default)]
+    pub proxy: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]

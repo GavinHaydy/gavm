@@ -14,13 +14,23 @@ pub async fn list_versions(
     page: usize,
     page_size: usize,
     key_word: Option<String>,
+    install_status: Option<u8>,
 ) -> ApiResponse<PageResult> {
     let manager = match LanguageManager::new(language) {
         Ok(m) => m,
         Err(e) => return ApiResponse::error(&e),
     };
 
-    match manager.list_versions(page, page_size, key_word).await {
+    if let Some(v) = install_status {
+        if v > 2 {
+            return ApiResponse::error("install_status must be 0 1 2 ");
+        }
+    }
+
+    match manager
+        .list_versions(page, page_size, key_word, install_status)
+        .await
+    {
         Ok(data) => ApiResponse::success_with_data(data),
         Err(e) => ApiResponse::error(&e),
     }

@@ -28,13 +28,14 @@ impl LanguageManager {
         page: usize,
         page_size: usize,
         key_word: Option<String>,
+        install_status: Option<u8>,
     ) -> Result<PageResult, String> {
         let all_versions = self.installer.list_versions().await?;
         let installed = self.installer.list_installed().await?;
         let current = self.installer.current().await?;
 
         // 1. filter
-        let filtered_versions: Vec<String> = if let Some(key) = key_word {
+        let mut filtered_versions: Vec<String> = if let Some(key) = key_word {
             if key.is_empty() {
                 all_versions // "", not filter
             } else {
@@ -46,6 +47,22 @@ impl LanguageManager {
         } else {
             all_versions
         };
+
+        if let Some(status) = install_status {
+            filtered_versions = match status {
+                1 => filtered_versions
+                    .into_iter()
+                    .filter(|v| installed.contains(v))
+                    .collect(),
+
+                2 => filtered_versions
+                    .into_iter()
+                    .filter(|v| !installed.contains(v))
+                    .collect(),
+
+                _ => filtered_versions, // 0 或非法值 → 全部
+            };
+        }
 
         let total = filtered_versions.len();
 
