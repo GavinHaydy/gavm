@@ -1,4 +1,7 @@
-use crate::utils::semver::sort_versions_desc;
+use crate::{
+    core::{enums::proxy::EDownload, utils::config::get_config_bool},
+    utils::semver::sort_versions_desc,
+};
 
 use serde::Deserialize;
 
@@ -10,7 +13,13 @@ struct Release {
 
 /// 从 Python 官方 API 获取版本
 pub async fn fetch_versions_go() -> Result<Vec<String>, String> {
-    let url = "https://go.dev/dl/?mode=json&include=all";
+    let proxy = get_config_bool("proxy", false);
+    let url = if proxy {
+        format!("{}?mode=json&include=all", EDownload::GoListProxy)
+    } else {
+        format!("{}?mode=json&include=all", EDownload::Go)
+    };
+    println!("{:?}{:?}", proxy, url);
 
     let releases: Vec<Release> = reqwest::get(url)
         .await
