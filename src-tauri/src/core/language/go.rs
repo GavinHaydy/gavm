@@ -3,6 +3,7 @@
 
 use crate::core::caches::go_cache::fetch_versions_go;
 use crate::core::common::error::io_err;
+use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
@@ -177,6 +178,7 @@ impl LanguageInstaller for GoInstaller {
         Ok(())
     }
     fn get_download_url(&self, version: &str) -> Result<String, String> {
+        let proxy = get_config_bool("proxy", false);
         let platform = self.get_platform();
         let arch = self.get_arch();
 
@@ -201,8 +203,16 @@ impl LanguageInstaller for GoInstaller {
 
         // 构建下载 URL
         let url = format!(
-            "https://go.dev/dl/go{}.{}-{}.{}",
-            version, go_platform, go_arch, extension
+            "{domain}go{v}.{platform}-{arch}.{e}",
+            domain = if proxy {
+                EDownload::Go
+            } else {
+                EDownload::GoDownLoadProxy
+            },
+            v = version,
+            platform = go_platform,
+            arch = go_arch,
+            e = extension,
         );
 
         Ok(url)
