@@ -50,7 +50,8 @@
     "versions_path": "版本路径",
     "auto_activate": "自动激活",
     "error": "操作失败",
-    "proxy": "代理设置"
+    "proxy": "代理设置",
+    "reset": "重置"
   },
   "downloader": {
     "title": "下载管理",
