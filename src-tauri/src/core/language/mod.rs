@@ -16,7 +16,6 @@ pub trait LanguageInstaller {
         &self,
         window: tauri::Window<Wry>,
         version: &str,
-        base_dir: &str,
         save_path: &str,
     ) -> Result<(), String>;
     async fn activate(&self, version: &str) -> Result<(), String>;

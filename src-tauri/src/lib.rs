@@ -40,7 +40,8 @@ pub fn run() {
             deactivate,
             uninstall,
             get_config_values,
-            update_configs
+            update_configs,
+            reset_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

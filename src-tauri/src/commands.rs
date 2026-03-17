@@ -4,7 +4,7 @@
 use crate::core::common::response::ApiResponse;
 use crate::core::dto::{PageResult, UpdateConfigReq};
 use crate::core::manager::LanguageManager;
-use crate::core::utils::config::{get_base_path, set_config_values};
+use crate::core::utils::config::{default_settings, set_config_values};
 use crate::utils::config::{get_config_value, get_download_path};
 use serde_json::Value;
 
@@ -38,26 +38,21 @@ pub async fn list_versions(
 
 #[tauri::command]
 pub async fn install(
-    app: tauri::AppHandle, // 注入 AppHandle 以读取配置
+    // app: tauri::AppHandle, // 注入 AppHandle 以读取配置
     window: tauri::Window<tauri::Wry>,
     language: String,
     version: String,
 ) -> ApiResponse<()> {
     // 直接从后端配置获取下载目录
-    let base_dir = get_base_path(&app);
-    let download_dir = get_download_path(&app);
+    // let base_dir = get_base_path(&app);
+    let download_dir = get_download_path();
     let manager = match LanguageManager::new(language) {
         Ok(m) => m,
         Err(e) => return ApiResponse::error(&e.to_string()),
     };
 
     match manager
-        .install(
-            window,
-            version,
-            base_dir.to_string_lossy().to_string(),
-            download_dir.to_string_lossy().to_string(),
-        )
+        .install(window, version, download_dir.to_string_lossy().to_string())
         .await
     {
         Ok(_) => ApiResponse::success_with_msg(),
@@ -120,4 +115,12 @@ pub fn get_config_values(keys: Vec<&str>) -> ApiResponse<Value> {
 #[tauri::command]
 pub fn update_configs(req: UpdateConfigReq) -> ApiResponse<()> {
     set_config_values(req)
+}
+
+#[tauri::command]
+pub fn reset_settings() -> ApiResponse<()> {
+    match default_settings() {
+        Ok(_) => ApiResponse::success_with_msg(),
+        Err(_) => ApiResponse::error("Failed to reset configuration file"),
+    }
 }

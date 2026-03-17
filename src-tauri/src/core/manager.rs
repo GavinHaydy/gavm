@@ -96,13 +96,10 @@ impl LanguageManager {
         &self,
         window: Window<Wry>,
         version: String,
-        base_dir: String,
         save_path: String,
     ) -> Result<(), String> {
         // 1. 调用具体语言的安装逻辑
-        self.installer
-            .install(window, &version, &base_dir, &save_path)
-            .await
+        self.installer.install(window, &version, &save_path).await
     }
 
     pub async fn activate(&self, version: &str) -> Result<(), String> {

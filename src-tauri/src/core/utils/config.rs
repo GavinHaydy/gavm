@@ -3,8 +3,6 @@ use std::{fs, path::Path};
 use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, Manager};
-use tauri_plugin_store::StoreExt;
 use tokio::fs as tokio_fs;
 
 use crate::core::dto::VersionCache;
@@ -12,34 +10,36 @@ use crate::core::{common::response::ApiResponse, dto::UpdateConfigReq};
 
 pub const CACHE_TTL: u64 = 60 * 60 * 24;
 
-/// 获取用户 base_path
-pub fn get_base_path(app: &AppHandle) -> PathBuf {
-    // 1️⃣ 默认路径（跨平台）
-    let default_path = dirs::home_dir().expect("cannot get home dir").join(".lvm"); // 默认 ~/.lvm / C:\Users\xxx\.lvm
+// 获取用户 base_path
+// pub fn get_base_path(app: &AppHandle) -> PathBuf {
+//     // 1️⃣ 默认路径（跨平台）
+//     let default_path = dirs::home_dir().expect("cannot get home dir").join(".lvm"); // 默认 ~/.lvm / C:\Users\xxx\.lvm
 
-    // 2️⃣ config / settings.json 文件
-    // Tauri store 会在这个路径生成
-    let settings_path = app
-        .path()
-        .app_data_dir()
-        .unwrap_or(default_path.clone())
-        .join("settings.json");
+//     // 2️⃣ config / settings.json 文件
+//     // Tauri store 会在这个路径生成
+//     let settings_path = app
+//         .path()
+//         .app_data_dir()
+//         .unwrap_or(default_path.clone())
+//         .join("settings.json");
 
-    // 3️⃣ 尝试读取 store
-    if let Some(store) = app.get_store(settings_path) {
-        if let Some(v) = store.get("base_path") {
-            if let Some(s) = v.as_str() {
-                return PathBuf::from(s); // 用户自定义路径优先
-            }
-        }
-    }
+//     // 3️⃣ 尝试读取 store
+//     if let Some(store) = app.get_store(settings_path) {
+//         if let Some(v) = store.get("base_path") {
+//             if let Some(s) = v.as_str() {
+//                 return PathBuf::from(s); // 用户自定义路径优先
+//             }
+//         }
+//     }
 
-    // 4️⃣ fallback 到默认路径
-    default_path
-}
-pub fn get_download_path(app: &AppHandle) -> PathBuf {
-    let base = get_base_path(app);
-    let download_dir = base.join("download");
+//     // 4️⃣ fallback 到默认路径
+//     default_path
+// }
+
+pub fn get_download_path() -> PathBuf {
+    // let base = get_base_path(app);
+    // let download_dir = base.join("download");
+    let download_dir = get_config_path("downloadPath");
 
     // 自动创建下载目录
     if !download_dir.exists() {
@@ -67,6 +67,23 @@ pub fn init_settings() -> PathBuf {
         .expect("Failed to create settings file");
     }
     settings_path
+}
+
+pub fn default_settings() -> Result<(), String> {
+    let base_dir = shim::get_base_path();
+    let settings_path = base_dir.join("settings.json");
+    let config = json!({
+        "autoActivate": true,
+        "downloadPath": base_dir.join("download"),
+        "versionsPath": base_dir.join("versions"),
+        "proxy": false,
+    });
+    fs::write(
+        &settings_path,
+        serde_json::to_string_pretty(&config).unwrap(),
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 // 修改配置
@@ -121,6 +138,16 @@ pub fn get_config_value(key: &str) -> Option<Value> {
     let json: Value = serde_json::from_str(&content).ok()?;
 
     json.get(key).cloned()
+}
+
+pub fn get_config_path(key: &str) -> PathBuf {
+    let value = get_config_value(key).unwrap_or_else(|| panic!("config key '{}' not found", key));
+
+    let path_str = value
+        .as_str()
+        .unwrap_or_else(|| panic!("config key '{}' is not a string", key));
+
+    PathBuf::from(path_str)
 }
 
 pub fn get_config_bool(key: &str, default: bool) -> bool {

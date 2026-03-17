@@ -7,7 +7,8 @@ use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
-    del_language, get_config_bool, get_dirs, get_language_current_path, versions_list,
+    del_language, get_config_bool, get_config_path, get_dirs, get_language_current_path,
+    versions_list,
 };
 use async_trait::async_trait;
 use std::fs;
@@ -61,7 +62,11 @@ impl GoInstaller {
     }
 
     fn get_base_dir(&self) -> PathBuf {
-        shim::get_base_path().join("go")
+        let path = get_config_path("versionsPath").join("go");
+        if !path.exists() {
+            fs::create_dir_all(&path).expect("create dirs err");
+        }
+        path
     }
 }
 #[async_trait]
@@ -94,7 +99,6 @@ impl LanguageInstaller for GoInstaller {
         &self,
         window: tauri::Window<Wry>,
         version: &str,
-        base_dir: &str,
         save_path: &str,
     ) -> Result<(), String> {
         let url = self.get_download_url(version)?;
@@ -126,7 +130,8 @@ impl LanguageInstaller for GoInstaller {
         };
 
         // 5. 根据文件格式选择解压方式
-        let extract_path = PathBuf::from(base_dir).join("go").join(version);
+        // let extract_path = PathBuf::from(base_dir).join("go").join(version);
+        let extract_path = get_config_path("versionsPath").join("go").join(version);
         println!("extract_path {:?}", extract_path);
 
         match extension {
@@ -142,7 +147,8 @@ impl LanguageInstaller for GoInstaller {
         }
 
         // 6. 设置当前版本
-        let current = PathBuf::from(base_dir).join("go").join("current");
+        // let current = PathBuf::from(base_dir).join("go").join("current");
+        let current = get_config_path("versionsPath").join("go").join("current");
         let auto_activite = get_config_bool("autoActivate", false);
 
         if !current.exists() || auto_activite {

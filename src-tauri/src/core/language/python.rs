@@ -7,7 +7,8 @@ use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::{
-    del_language, get_config_bool, get_dirs, get_language_current_path, versions_list,
+    del_language, get_config_bool, get_config_path, get_dirs, get_language_current_path,
+    versions_list,
 };
 use async_trait::async_trait;
 use std::fs;
@@ -62,7 +63,11 @@ impl PythonInstaller {
 
     // Get base directory
     fn get_base_dir(&self) -> PathBuf {
-        shim::get_base_path().join("python")
+        let path = get_config_path("versionsPath").join("python");
+        if !path.exists() {
+            fs::create_dir_all(&path).expect("create err");
+        }
+        path
     }
 }
 
@@ -93,7 +98,6 @@ impl LanguageInstaller for PythonInstaller {
         &self,
         window: tauri::Window<Wry>,
         version: &str,
-        base_dir: &str,
         save_path: &str,
     ) -> Result<(), String> {
         // 1. 获取 URL
@@ -122,12 +126,15 @@ impl LanguageInstaller for PythonInstaller {
 
         // 4. 下载完成后，继续执行解压逻辑...
         // self.extract(&dest_path, ...).await?;
-        let extract_path = PathBuf::from(base_dir).join("python").join(version);
+        // let extract_path = PathBuf::from(base_dir).join("python").join(version);
+        let extract_path = get_config_path("versionsPath").join("python").join(version);
         println!("extract_path {:?}", extract_path);
         unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
 
         // 创建或修改current 根据配置来
-        let current = PathBuf::from(base_dir).join("python").join("current");
+        let current = get_config_path("versionsPath")
+            .join("python")
+            .join("current");
         let auto_activite = get_config_bool("autoActivate", false);
 
         // 不存在或开启自动切换
