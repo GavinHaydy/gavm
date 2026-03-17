@@ -69,7 +69,7 @@ pub fn init_settings() -> PathBuf {
     settings_path
 }
 
-pub fn default_settings() -> Result<(), String> {
+pub fn default_settings() -> Result<Value, String> {
     let base_dir = shim::get_base_path();
     let settings_path = base_dir.join("settings.json");
     let config = json!({
@@ -83,7 +83,7 @@ pub fn default_settings() -> Result<(), String> {
         serde_json::to_string_pretty(&config).unwrap(),
     )
     .map_err(|e| e.to_string())?;
-    Ok(())
+    Ok(config)
 }
 
 // 修改配置

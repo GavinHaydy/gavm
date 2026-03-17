@@ -118,9 +118,9 @@ pub fn update_configs(req: UpdateConfigReq) -> ApiResponse<()> {
 }
 
 #[tauri::command]
-pub fn reset_settings() -> ApiResponse<()> {
+pub fn reset_settings() -> ApiResponse<Value> {
     match default_settings() {
-        Ok(_) => ApiResponse::success_with_msg(),
+        Ok(data) => ApiResponse::success_with_data(data),
         Err(_) => ApiResponse::error("Failed to reset configuration file"),
     }
 }
