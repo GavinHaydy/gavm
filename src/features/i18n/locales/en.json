@@ -50,7 +50,8 @@
     "versions_path": "Versions Path",
     "auto_activate": "Auto Activate",
     "error": "Error",
-    "proxy": "Proxy"
+    "proxy": "Proxy",
+    "reset": "Reset"
   },
   "downloader": {
     "title": "Download Manager",

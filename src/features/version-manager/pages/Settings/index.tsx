@@ -45,6 +45,18 @@ export const Settings = () => {
     }
   };
 
+  const handleReset = async () => {
+    try {
+      const res = await safeInvoke(CommandEnum.RESET_SETTINGS);
+      form.setFieldsValue({
+        req: res,
+      });
+      message.success(t('settings.success'));
+    } catch (error) {
+      message.error((error as Error).message);
+    }
+  };
+
   return (
     <Card title={t('settings.title')}>
       <Form form={form} layout="vertical" onFinish={handleSave}>
@@ -68,9 +80,14 @@ export const Settings = () => {
           <Switch />
         </Form.Item>
 
-        <Button type="primary" htmlType="submit">
-          {t('settings.save')}
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button type="default" onClick={handleReset}>
+            {t('settings.reset')}
+          </Button>
+          <Button type="primary" htmlType="submit">
+            {t('settings.save')}
+          </Button>
+        </div>
       </Form>
     </Card>
   );

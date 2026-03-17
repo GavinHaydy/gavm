@@ -14,6 +14,7 @@ export enum CommandEnum {
   VERSIONS_PATH = 'versionsPath',
   AUTO_ACTIVATE = 'autoActivate',
   PROXY = 'proxy',
+  RESET_SETTINGS = 'reset_settings',
 }
 
 export enum InstallStatusEnum {
