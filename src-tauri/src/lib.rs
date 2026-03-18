@@ -9,10 +9,9 @@ mod core;
 
 use core::*;
 use tauri::Manager;
-use utils::config::*;
 
 use commands::*;
-
+use lvm_core::config::init::ensure_settings;
 use shim::install_shims;
 
 fn init_shims() {
@@ -27,7 +26,7 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             init_shims();
-            init_settings();
+            ensure_settings().unwrap_or_else(|e| panic!("Init Error: {}", e));
             let _app_handle = app.app_handle();
             Ok(())
         })

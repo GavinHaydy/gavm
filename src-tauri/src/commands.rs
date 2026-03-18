@@ -5,7 +5,8 @@ use crate::core::common::response::ApiResponse;
 use crate::core::dto::{PageResult, UpdateConfigReq};
 use crate::core::manager::LanguageManager;
 use crate::core::utils::config::{default_settings, set_config_values};
-use crate::utils::config::{get_config_value, get_download_path};
+use lvm_core::config::get::get_config_value;
+use lvm_core::path::get::get_download_path;
 use serde_json::Value;
 
 #[tauri::command]
@@ -38,13 +39,10 @@ pub async fn list_versions(
 
 #[tauri::command]
 pub async fn install(
-    // app: tauri::AppHandle, // 注入 AppHandle 以读取配置
     window: tauri::Window<tauri::Wry>,
     language: String,
     version: String,
 ) -> ApiResponse<()> {
-    // 直接从后端配置获取下载目录
-    // let base_dir = get_base_path(&app);
     let download_dir = get_download_path();
     let manager = match LanguageManager::new(language) {
         Ok(m) => m,

@@ -6,11 +6,12 @@ use crate::core::common::error::io_err;
 use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
-use crate::core::utils::config::{
-    del_language, get_config_bool, get_config_path, get_dirs, get_language_current_path,
-    versions_list,
-};
+use crate::core::utils::config::{del_language, versions_list};
 use async_trait::async_trait;
+use lvm_core::config::get::{get_config_bool, get_language_current_version};
+use lvm_core::enums::path::EPath;
+use lvm_core::files::get::get_dirs;
+use lvm_core::path::get::current_path;
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
@@ -61,9 +62,13 @@ impl PythonInstaller {
         }
     }
 
+    fn name(&self) -> &'static str {
+        "python"
+    }
+
     // Get base directory
     fn get_base_dir(&self) -> PathBuf {
-        let path = get_config_path("versionsPath").join("python");
+        let path = EPath::Version.path().join(self.name());
         if !path.exists() {
             fs::create_dir_all(&path).expect("create err");
         }
@@ -87,7 +92,7 @@ impl LanguageInstaller for PythonInstaller {
     async fn current(&self) -> Result<Option<String>, String> {
         let path = self.get_base_dir().join("current");
 
-        match std::fs::read_to_string(path) {
+        match fs::read_to_string(path) {
             Ok(v) => Ok(Some(v.trim().to_string())),
             Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
             Err(e) => Err(e.to_string()),
@@ -102,7 +107,6 @@ impl LanguageInstaller for PythonInstaller {
     ) -> Result<(), String> {
         // 1. 获取 URL
         let url = self.get_download_url(version)?;
-        println!("url {}", url);
 
         // 2. 确定本地路径
         let dest_path = PathBuf::from(save_path).join(format!("python-{}.zip", version));
@@ -127,18 +131,16 @@ impl LanguageInstaller for PythonInstaller {
         // 4. 下载完成后，继续执行解压逻辑...
         // self.extract(&dest_path, ...).await?;
         // let extract_path = PathBuf::from(base_dir).join("python").join(version);
-        let extract_path = get_config_path("versionsPath").join("python").join(version);
-        println!("extract_path {:?}", extract_path);
+        let extract_path = EPath::Version.path().join(self.name()).join(version);
+
         unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
 
         // 创建或修改current 根据配置来
-        let current = get_config_path("versionsPath")
-            .join("python")
-            .join("current");
-        let auto_activite = get_config_bool("autoActivate", false);
+        let current = current_path(self.name());
+        let auto_activate = get_config_bool("autoActivate", false);
 
         // 不存在或开启自动切换
-        if !current.exists() || auto_activite {
+        if !current.exists() || auto_activate {
             let _ = fs::write(current, version).map_err(io_err);
         }
 
@@ -146,7 +148,7 @@ impl LanguageInstaller for PythonInstaller {
     }
 
     async fn activate(&self, version: &str) -> Result<(), String> {
-        let current_file = self.get_base_dir().join("current");
+        let current_file = current_path(self.name());
 
         fs::write(current_file, version).map_err(|e| e.to_string())?;
 
@@ -154,9 +156,9 @@ impl LanguageInstaller for PythonInstaller {
     }
 
     async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current_version = get_language_current_path("python").unwrap_or_default();
+        let current_version = get_language_current_version(self.name()).unwrap_or_default();
 
-        let current_file = self.get_base_dir().join("current");
+        let current_file = current_path(self.name());
 
         if current_version != version {
             return Err(format!("The currently active version is not {}", version));

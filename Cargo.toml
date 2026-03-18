@@ -1,6 +1,7 @@
 [workspace]
 members = [
+    "lvm-core",
     "src-tauri",
-    "shim"
+    "shim",
 ]
 resolver = "2"

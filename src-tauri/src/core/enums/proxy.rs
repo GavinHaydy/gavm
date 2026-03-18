@@ -15,7 +15,7 @@ impl fmt::Display for EDownload {
             EDownload::PythonProxy => "https://mirrors.huaweicloud.com/python/",
             EDownload::Go => "https://go.dev/dl/",
             EDownload::GoListProxy => "https://golang.google.cn/dl/",
-            EDownload::GoDownLoadProxy => "https//dl.google.com/",
+            EDownload::GoDownLoadProxy => "https://dl.google.com/go/",
         };
         write!(f, "{}", s)
     }

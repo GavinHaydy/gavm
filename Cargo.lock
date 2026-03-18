@@ -2146,6 +2146,7 @@ dependencies = [
  "dirs 6.0.0",
  "flate2",
  "futures-util",
+ "lvm-core",
  "once_cell",
  "regex",
  "reqwest",
@@ -2159,6 +2160,14 @@ dependencies = [
  "tauri-plugin-store",
  "tokio",
  "zip",
+]
+
+[[package]]
+name = "lvm-core"
+version = "0.1.0"
+dependencies = [
+ "dirs 5.0.1",
+ "serde_json",
 ]
 
 [[package]]
@@ -3762,6 +3771,7 @@ name = "shim"
 version = "0.1.0"
 dependencies = [
  "dirs 5.0.1",
+ "lvm-core",
  "serde",
  "serde_json",
  "winapi",

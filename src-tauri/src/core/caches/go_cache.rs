@@ -1,12 +1,10 @@
-use crate::{
-    core::{enums::proxy::EDownload, utils::config::get_config_bool},
-    utils::semver::sort_versions_desc,
-};
+use crate::{core::enums::proxy::EDownload, utils::semver::sort_versions_desc};
 
+use lvm_core::config::get::get_config_bool;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct Release {
+struct GoRelease {
     version: String,
     stable: bool,
 }
@@ -19,9 +17,8 @@ pub async fn fetch_versions_go() -> Result<Vec<String>, String> {
     } else {
         format!("{}?mode=json&include=all", EDownload::Go)
     };
-    println!("{:?}{:?}", proxy, url);
 
-    let releases: Vec<Release> = reqwest::get(url)
+    let releases: Vec<GoRelease> = reqwest::get(url)
         .await
         .map_err(|e| e.to_string())?
         .json()
