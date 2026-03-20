@@ -9,7 +9,6 @@ struct GoRelease {
     stable: bool,
 }
 
-/// 从 Python 官方 API 获取版本
 pub async fn fetch_versions_go() -> Result<Vec<String>, String> {
     let proxy = get_config_bool("proxy", false);
     let url = if proxy {

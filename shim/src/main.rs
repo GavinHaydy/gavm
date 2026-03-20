@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = fs::read_to_string(current_file)?.trim().to_string();
 
     // let mut real_exe = EPath::Version.path().join(&exe_name).join(&version).join(&exe_name);
-    let mut real_exe = if exe_name.starts_with("go") {
+    let real_exe = if exe_name.starts_with("go") {
         EPath::Version
             .path()
             .join(&exe_name)

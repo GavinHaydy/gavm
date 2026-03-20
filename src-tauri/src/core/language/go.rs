@@ -1,5 +1,5 @@
-// python.rs
-// Python installer implementation
+// go.rs
+// Go installer implementation
 
 use crate::core::caches::go_cache::fetch_versions_go;
 use crate::core::common::error::io_err;
@@ -23,10 +23,6 @@ impl GoInstaller {
     pub fn new() -> Self {
         Self
     }
-
-    // fn get_base_url(&self) -> &'static str {
-    //     "https://go.dev/dl/"
-    // }
 
     fn get_platform(&self) -> String {
         #[cfg(target_os = "windows")]
