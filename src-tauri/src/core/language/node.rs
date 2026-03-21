@@ -1,4 +1,4 @@
-use crate::core::caches::go_cache::fetch_versions_go;
+use crate::core::caches::node_cache::fetch_versions_node;
 use crate::core::common::error::io_err;
 use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::{untar_file, unzip_file};
@@ -14,9 +14,9 @@ use std::io::ErrorKind;
 use std::path::PathBuf;
 use tauri::Wry;
 
-pub struct GoInstaller;
+pub struct NodeInstaller;
 
-impl GoInstaller {
+impl NodeInstaller {
     pub fn new() -> Self {
         Self
     }
@@ -56,7 +56,7 @@ impl GoInstaller {
     }
 
     fn name(&self) -> &'static str {
-        "go"
+        "node"
     }
 
     fn get_base_dir(&self) -> PathBuf {
@@ -68,9 +68,9 @@ impl GoInstaller {
     }
 }
 #[async_trait]
-impl LanguageInstaller for GoInstaller {
+impl LanguageInstaller for NodeInstaller {
     async fn list_versions(&self) -> Result<Vec<String>, String> {
-        let versions = versions_list("go", fetch_versions_go).await?;
+        let versions = versions_list("node", fetch_versions_node).await?;
 
         Ok(versions)
     }
@@ -79,9 +79,9 @@ impl LanguageInstaller for GoInstaller {
         get_dirs(&dir).map_err(|e| e.to_string())
     }
     async fn current(&self) -> Result<Option<String>, String> {
-        let go_current_path = self.get_base_dir().join("current");
+        let node_current_path = self.get_base_dir().join("current");
 
-        match fs::read_to_string(go_current_path) {
+        match fs::read_to_string(node_current_path) {
             Ok(v) => Ok(Some(v.trim().to_string())),
             Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
             Err(e) => Err(e.to_string()),
@@ -104,10 +104,10 @@ impl LanguageInstaller for GoInstaller {
             return Err("Unsupported file format".into());
         };
 
-        let dest_path = PathBuf::from(save_path).join(format!("go-{}.{}", version, extension));
+        let dest_path = PathBuf::from(save_path).join(format!("node-{}.{}", version, extension));
 
         match crate::core::installers::downloader::Downloader::download_with_progress(
-            "Go",
+            "Node",
             window,
             version,
             &url,
@@ -154,7 +154,7 @@ impl LanguageInstaller for GoInstaller {
         Ok(())
     }
     async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current_version = get_language_current_version("go").unwrap_or_default();
+        let current_version = get_language_current_version("node").unwrap_or_default();
 
         let current_file = current_path(self.name());
 
@@ -167,45 +167,41 @@ impl LanguageInstaller for GoInstaller {
         Ok(())
     }
     async fn uninstall(&self, version: &str) -> Result<(), String> {
-        del_language("go", version)?;
+        del_language("node", version)?;
 
         Ok(())
     }
     fn get_download_url(&self, version: &str) -> Result<String, String> {
-        let proxy = get_config_bool("proxy", false);
+        // let proxy = get_config_bool("proxy", false);
         let platform = self.get_platform();
         let arch = self.get_arch();
 
-        let go_arch = match arch.as_str() {
-            "x86_64" => "amd64",
+        let node_arch = match arch.as_str() {
+            "x86_64" => "x64",
             "arm64" => "arm64",
             _ => return Err(format!("Unsupported architecture: {}", arch)),
         };
 
-        let go_platform = match platform.as_str() {
-            "windows" => "windows",
+        let node_platform = match platform.as_str() {
+            "windows" => "win",
             "macos" => "darwin",
             "linux" => "linux",
             _ => return Err(format!("Unsupported platform: {}", platform)),
         };
 
         // 确定文件扩展名
-        let extension = match go_platform {
+        let extension = match node_platform {
             "windows" => "zip",
             _ => "tar.gz",
         };
 
         // 构建下载 URL
         let url = format!(
-            "{domain}go{v}.{platform}-{arch}.{e}",
-            domain = if !proxy {
-                EDownload::Go
-            } else {
-                EDownload::GoDownLoadProxy
-            },
+            "{domain}dist/v{v}/node-v{v}-{platform}-{arch}.{e}",
+            domain = EDownload::Node,
             v = version,
-            platform = go_platform,
-            arch = go_arch,
+            platform = node_platform,
+            arch = node_arch,
             e = extension,
         );
 

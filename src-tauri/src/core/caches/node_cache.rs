@@ -23,9 +23,9 @@ enum BoolOrString {
 pub async fn fetch_versions_node() -> Result<Vec<String>, String> {
     let proxy = get_config_bool("proxy", false);
     let url = if proxy {
-        format!("{}?mode=json&include=all", EDownload::NodeProxy)
+        format!("{}/dist/index.json", EDownload::NodeProxy)
     } else {
-        format!("{}?mode=json&include=all", EDownload::Node)
+        format!("{}/dist/index.json", EDownload::Node)
     };
 
     let releases: Vec<NodeRelease> = reqwest::get(url)

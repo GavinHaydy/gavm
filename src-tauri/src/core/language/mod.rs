@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use tauri::Wry;
 
 pub mod go;
+pub mod node;
 pub mod python;
 
 #[async_trait]

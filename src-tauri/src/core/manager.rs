@@ -3,6 +3,7 @@
 
 use crate::core::dto::{PageResult, VersionInfo};
 use crate::core::language::go::GoInstaller;
+use crate::core::language::node::NodeInstaller;
 use crate::core::language::{python::PythonInstaller, LanguageInstaller};
 use tauri::{Window, Wry};
 
@@ -18,6 +19,9 @@ impl LanguageManager {
             }),
             "go" => Ok(Self {
                 installer: Box::new(GoInstaller::new()),
+            }),
+            "node" => Ok(Self {
+                installer: Box::new(NodeInstaller::new()),
             }),
             _ => Err("Unsupported language".into()),
         }
