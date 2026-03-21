@@ -1,5 +1,5 @@
 import { mockConfig } from './config';
-import { mockNodeVersions, mockVersions } from './verison';
+import { mockNodeVersions, mockVersions } from './version';
 
 import { CommandEnum, LanguageEnum } from '@/core/constants/enum';
 import { SearchPayload } from '@/core/types/common';
