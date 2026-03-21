@@ -34,7 +34,9 @@ export async function safeInvoke<T>(
     const handler = mockHandlers[command as keyof typeof mockHandlers];
 
     res = handler
-      ? ((await mockResponse<T>(handler() as unknown as T)) as IApiResponse<T>)
+      ? ((await mockResponse<T>(
+          (handler as (args?: InvokeArgs) => unknown)(args) as T,
+        )) as IApiResponse<T>)
       : (defaultErrorResponse as IApiResponse<T>);
   } else if (!isTauri) {
     res = defaultErrorResponse as IApiResponse<T>;

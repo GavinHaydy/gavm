@@ -1,156 +1,12 @@
-# LVM (Language Version Manager) - 项目上下文文档
+# AGENTS.md
+
+本文档为 Qoder (qoder.com) 提供本仓库的开发指南。
 
 ## 项目概述
 
-LVM 是一个基于 Tauri + React + TypeScript 的跨平台语言版本管理器应用程序。该项目旨在为开发者提供一个统一的管理界面，用于安装、切换和管理不同编程语言的版本（当前支持 Python 和 Go，架构设计已预留支持 Java、JavaScript、Rust、V、Zig 等语言的扩展能力）。
+LVM 是一个基于 Tauri + React + TypeScript 的跨平台语言版本管理器桌面应用，提供统一的界面来安装、切换和管理不同编程语言的版本（当前支持 Python 和 Go）。
 
-### 核心功能
-
-- **版本管理**: 查看、安装、卸载、激活、停用不同版本的编程语言
-- **搜索过滤**: 支持按关键词搜索和过滤可用版本
-- **下载管理**: 实时显示下载进度，支持批量下载任务管理，抽屉式下载中心 UI
-- **配置管理**: 支持自定义基础路径、下载路径、版本路径和自动激活设置
-- **进度追踪**: 实时下载进度推送，优化前端渲染性能（200ms 间隔节流更新）
-- **Mock 模式**: 支持开发模式下的数据模拟，便于前端独立开发和测试
-- **Shim 管理**: 自动安装和管理语言版本的快捷方式（Shim）
-
-### 核心技术栈
-
-**前端:**
-- **React 19.1.0** - UI 框架
-- **TypeScript** - 类型安全的 JavaScript 超集
-- **Vite 7.0.4** - 现代化的前端构建工具
-- **Ant Design 6.3.0** - 企业级 UI 组件库
-- **Redux Toolkit 2.11.2** - 状态管理
-- **React Router DOM 7.13.0** - 路由管理
-- **i18next 25.8.13** - 国际化支持（支持中英文）
-- **Tauri API 2** - 前后端通信桥接
-
-**后端:**
-- **Tauri 2** - 跨平台桌面应用框架
-- **Rust** - 后端核心语言
-- **Tokio 1.49.0** - 异步运行时
-- **Reqwest 0.13.2** - HTTP 客户端（用于下载语言版本）
-- **Serde 1** - 序列化/反序列化
-- **Tauri Plugin Store 2.4.2** - 持久化存储
-- **zip 8.1.0** - ZIP 文件解压
-- **flate2 1.0** - Gzip 压缩支持
-- **tar 0.4** - TAR 文件解压
-- **async-trait 0.1** - 异步 Trait 支持
-- **regex 1** - 正则表达式处理
-- **futures-util 0.3** - 异步工具函数
-- **dirs 6.0.0** - 系统目录路径获取
-- **shim** - 本地 crate，用于管理版本快捷方式
-
-### 项目架构
-
-#### 前端架构 (`src/`)
-```
-src/
-├── app/                    # 应用核心
-│   ├── main.tsx           # React 渲染入口（合并了 App 组件）
-│   ├── main.css           # 全局样式
-│   ├── layouts/           # 布局组件
-│   │   └── BasicLayout/   # 基础布局
-│   │       ├── index.tsx  # 布局组件
-│   │       └── Sider.tsx  # 侧边栏导航
-│   └── routes/            # 路由配置
-│       └── index.tsx      # 路由定义（/, /python, /go, /settings 等）
-├── api/                   # API 调用层
-│   └── tauri.ts           # Tauri 命令调用封装（safeInvoke，支持 Mock 模式）
-├── core/                  # 核心配置和类型
-│   ├── config/            # 配置文件
-│   │   └── env.ts         # 环境配置（API_MODE）
-│   ├── constants/         # 常量定义（语言枚举 LangEnum, 命令枚举 CommandEnum 等）
-│   └── types/             # TypeScript 类型定义
-│       └── common.ts      # ISearchPayload 等通用类型
-├── features/              # 功能模块
-│   ├── i18n/              # 国际化
-│   │   ├── index.ts       # i18n 配置
-│   │   └── locales/       # 语言包（en.json, zh.json，使用 snake_case keys）
-│   ├── theme/             # 主题管理
-│   │   ├── ThemeProvider.tsx
-│   │   └── themeSlice.ts  # Redux 切片
-│   └── version-manager/   # 版本管理功能
-│       ├── components/    # 版本管理组件
-│       │   └── DownloadCenter/  # 下载管理中心（Drawer 组件）
-│       └── pages/         # 页面组件
-│           ├── PythonManagePage/  # Python 版本管理主页
-│           ├── GoManagePage/      # Go 版本管理主页
-│           └── Settings/          # 全局设置页面（使用 Form 组件）
-├── hooks/                 # 自定义 React Hooks
-│   └── useDownload.ts     # 下载任务管理 Hook
-├── mock/                  # Mock 数据和处理器（开发模式）
-│   ├── config.ts          # Mock 配置数据
-│   ├── handlers.ts        # Mock 请求处理器
-│   ├── util.ts            # Mock 工具函数（延迟模拟）
-│   └── verison.ts         # Mock 版本数据
-├── pages/                 # 页面
-│   └── error.tsx          # 错误页面
-├── shared/                # 共享资源
-│   ├── components/        # 共享组件
-│   │   ├── IconFont.ts    # 图标字体
-│   │   └── VersionTable.tsx  # 版本表格组件（带搜索、分页、响应式设计）
-│   └── utils/             # 工具函数
-│       ├── common.ts      # 通用工具函数（keysToCamel 等）
-│       └── tauriStore.ts  # Tauri Store 工具
-└── store/                 # Redux Store 配置
-    └── index.ts           # Store 定义
-```
-
-#### 后端架构 (`src-tauri/src/`)
-```
-src-tauri/src/
-├── main.rs                # 应用入口，调用 lib.rs::run()
-├── lib.rs                 # 库入口，注册 Tauri 命令和插件，初始化 Shim
-├── commands.rs            # Tauri 命令层（前后端桥接）
-│   ├── list_versions      # 获取版本列表（支持搜索）
-│   ├── install            # 安装版本（带进度推送）
-│   ├── activate           # 激活指定版本
-│   ├── deactivate         # 停用指定版本
-│   ├── uninstall          # 卸载指定版本
-│   ├── get_config_values  # 批量获取配置值
-│   └── update_configs     # 更新配置
-└── core/                  # 核心业务逻辑
-    ├── manager.rs         # 语言管理器（统一接口）
-    ├── dto.rs             # 数据传输对象（VersionInfo, PageResult, UpdateConfigReq）
-    ├── common/            # 公共模块
-    │   ├── mod.rs         # 模块定义
-    │   ├── error.rs       # 错误处理
-    │   └── response.rs    # 统一 API 响应格式（ApiResponse）
-    ├── language/          # 语言模块
-    │   ├── mod.rs         # Trait 定义（LanguageInstaller）
-    │   ├── python.rs      # Python 实现
-    │   └── go.rs          # Go 实现
-    ├── installers/        # 安装工具
-    │   ├── mod.rs         # 安装器模块
-    │   ├── downloader.rs  # 下载器（带进度推送）
-    │   └── extract.rs     # 解压工具（支持 zip 和 tar.gz）
-    └── utils/             # 工具函数
-        ├── mod.rs         # 工具模块
-        ├── config.rs      # 配置管理（base_path, download_path, versions_path）
-        └── semver.rs      # 语义化版本处理
-```
-
-### 设计模式
-
-- **Strategy Pattern**: 通过 `LanguageInstaller` trait 实现不同语言管理策略的可插拔设计
-- **Layered Architecture**: 前端采用分层架构（Component -> Feature -> Core），后端采用三层架构（Commands -> Manager -> Installer）
-- **Repository Pattern**: 隔离数据访问逻辑，便于测试和维护
-- **Mock Pattern**: 通过环境变量切换 Mock 模式，支持前端独立开发
-
----
-
-## 构建和运行
-
-### 前置要求
-
-- **Node.js**: 推荐使用 Bun（项目使用 bun.lock），也可以使用 npm/pnpm
-- **Rust**: 1.70 或更高版本
-- **系统依赖**:
-  - Windows: Microsoft Visual C++ Redistributable
-  - macOS: Xcode Command Line Tools
-  - Linux: libwebkit2gtk-4.0-dev, build-essential, curl, wget, file, libssl-dev
+## 常用命令
 
 ### 开发命令
 
@@ -161,798 +17,123 @@ bun install
 # 启动开发服务器（同时启动前端和 Tauri 后端）
 bun run tauri dev
 
-# 仅启动前端开发服务器（Tauri 模式）
-bun run dev
-
-# 启动前端开发服务器（Mock 模式，用于前端独立开发）
+# 仅启动前端开发服务器（Mock 模式，用于前端独立开发）
 bun run dev:mock
 
 # 构建生产版本
 bun run build
+```
 
-# 预览生产构建
-bun run preview
+### 代码质量
 
-# 代码检查
+```bash
+# 运行代码检查（提交前必须通过）
 bun run lint
 
 # 自动修复代码问题
 bun run lint:fix
 
-# 代码格式化
+# 格式化代码
 bun run format
 ```
 
-### Tauri 特定命令
+### Rust 后端
 
 ```bash
-# 开发模式（会自动运行 bun run dev）
-cargo tauri dev
+# 格式化 Rust 代码
+cargo fmt
 
-# 构建桌面应用（会自动运行 bun run build）
-cargo tauri build
+# 运行 Clippy 检查
+cargo clippy
 
-# 查看所有 Tauri 命令
-cargo tauri --help
+# 构建 shim crate（运行 Tauri 前需要）
+cargo build -p shim
 ```
 
-### 开发服务器配置
+## 架构概述
 
-- **前端端口**: 1420
-- **HMR 端口**: 1421
-- **热模块替换**: 自动忽略 `src-tauri` 目录的变更
-- **路径别名**: `@/` 指向 `src/` 目录
+### 前后端通信
 
----
+前端通过 `safeInvoke()` 函数（位于 `src/api/tauri.ts`）调用 Tauri 命令：
 
-## 开发规范
-
-### 代码风格
-
-#### TypeScript/JavaScript
-- **格式化工具**: Prettier
-- **配置文件**: `.prettierrc`
-- **关键规则**:
-  - 打印宽度: 100 字符
-  - 缩进: 2 空格
-  - 引号: 单引号（JSX 属性使用双引号）
-  - 分号: 必须使用
-  - 尾随逗号: ES5 风格（始终添加）
-  - 箭头函数参数: 单参数时省略括号
-  - 行尾: CRLF（Windows）
-
-#### Linting
-- **工具**: ESLint 9
-- **配置文件**: `eslint.config.js`
-- **关键规则**:
-  - 必须通过 TypeScript 类型检查
-  - 禁止未使用的导入（`unused-imports/no-unused-imports: error`）
-  - 禁止未使用的变量（警告级别，以下划线开头的变量除外）
-  - 强制导入顺序: builtin → external → internal → parent → sibling → index
-  - React JSX 布尔值: 省略值（如 `<Button disabled />` 而非 `<Button disabled={true} />`）
-  - 自闭合标签: 尽可能使用自闭合（如 `<Component />`）
-  - 全局忽略: `node_modules/**`, `dist/**`, `build/**`, `target/**`, `src-tauri/target/**`
-
-#### Rust
-- **格式化工具**: cargo fmt（默认配置）
-- **Linter**: clippy
-- **关键约定**:
-  - 使用 `async/await` 进行异步操作
-  - 错误处理使用 `Result<T, String>` 类型
-  - 使用 `#[allow(dead_code)]` 标记未使用的代码（保留以备未来使用）
-  - 模块组织遵循功能而非文件类型
-
-### 文件命名约定
-
-- **组件**: PascalCase（如 `VersionTable.tsx`, `ThemeProvider.tsx`）
-- **工具函数**: camelCase（如 `store.ts`, `tauriStore.ts`）
-- **常量/枚举**: PascalCase（如 `LangEnum`）
-- **Rust 模块**: snake_case（如 `manager.rs`, `dto.rs`）
-- **Rust 结构体/枚举**: PascalCase（如 `LanguageManager`, `VersionInfo`）
-
-### 导入顺序
-
-```typescript
-// 1. Node.js 内置模块
-import { useState, useEffect } from 'react';
-
-// 2. 外部依赖（第三方库）
-import { Button, Table } from 'antd';
-import { invoke } from '@tauri-apps/api/core';
-
-// 3. 内部模块（使用 @/ 别名）
-import { LangEnum } from '@/core/constants/enum';
-import { store } from '@/store';
-
-// 4. 相对导入
-import { SomeComponent } from './components';
-import { someUtil } from '../utils';
-```
-
-### 类型定义
-
-- **前端 TypeScript**:
-  - 所有组件必须使用接口或类型定义 Props
-  - 使用 `interface` 定义对象结构
-  - 使用 `type` 定义联合类型、交叉类型和工具类型
-  - 启用严格模式（`strict: true`）
-
-- **后端 Rust**:
-  - 使用 `struct` 定义数据结构
-  - 使用 `#[derive(Serialize, Deserialize)]` 自动实现序列化
-  - 使用 `#[tauri::command]` 标记 Tauri 命令函数
-
-### 状态管理
-
-- **全局状态**: 使用 Redux Toolkit
-  - 创建 slice: `features/*/*Slice.ts`
-  - 注册到 store: `store/index.ts`
-  - 使用类型安全的 hooks: `useAppDispatch`, `useAppSelector`
-
-- **本地状态**: 使用 React Hooks（`useState`, `useReducer`）
-
-- **持久化存储**: 使用 Tauri Store Plugin
-  - 工具函数: `src/shared/utils/tauriStore.ts`
-
-### 国际化
-
-- **框架**: i18next + react-i18next
-- **语言文件**: `src/features/i18n/locales/`
-- **当前支持**: 英文（`en.json`），中文（`zh.json`）
-- **命名规范**: 所有翻译 key 使用 snake_case（如 `install_status`, `base_path`）
-- **使用方式**:
-  ```typescript
-  import { useTranslation } from 'react-i18next';
-
-  function MyComponent() {
-    const { t } = useTranslation();
-    return <h1>{t('welcome')}</h1>;
-  }
-  ```
-
-### Mock 模式
-
-- **环境变量**: `VITE_API_MODE`（可选值: `mock` | `tauri`，默认: `tauri`）
-- **配置文件**: `.env.mock`（Mock 模式配置）
-- **Mock 数据**: `src/mock/` 目录
-  - `config.ts` - 配置相关 Mock 数据
-  - `handlers.ts` - Mock 请求处理器映射
-  - `util.ts` - Mock 工具函数（如延迟模拟）
-  - `verison.ts` - 版本相关 Mock 数据
-- **使用方式**:
-  ```bash
-  # 启动 Mock 模式
-  bun run dev:mock
-  ```
-- **工作原理**:
-  - `safeInvoke` 函数会检查 `isMock` 状态
-  - 在 Mock 模式下，使用 `mockHandlers` 返回预设数据
-  - 支持可配置的响应延迟（默认 300ms）
-
-### 测试
-
-**当前状态**: 项目尚未配置测试框架。
-
-**建议**:
-- 前端单元测试: Vitest + React Testing Library
-- 端到端测试: Playwright
-- 后端单元测试: Rust 内置测试框架
-
-### Git 提交规范
-
-**当前提交历史示例**:
-```
-ff18f8d fix: clippy errs
-9fd16b7 fix: fmt errs
-ba94f7a fix: fmt errs
-f007d45 fix: fmt errs
-8e60edf fix: clippy errs
-```
-
-**建议遵循 Conventional Commits**:
-- `feat:` 新功能
-- `fix:` 修复 bug
-- `refactor:` 重构（不改变功能）
-- `perf:` 性能优化
-- `style:` 代码格式调整
-- `docs:` 文档更新
-- `test:` 测试相关
-- `chore:` 构建/工具配置
-
----
-
-## 核心功能实现
-
-### 版本列表查询（支持搜索）
-
-**前端调用**:
 ```typescript
 import { safeInvoke } from '@/api/tauri';
 
 const result = await safeInvoke<VersionResult>('list_versions', {
-  language: 'python',  // 或 'go'
+  language: 'python',
   page: 0,
   pageSize: 10,
-  keyWord: '3.9'  // 可选搜索关键词
+  keyWord: '3.9'
 });
 ```
 
-**后端实现**:
-1. `commands.rs::list_versions` - 接收前端请求，包含搜索关键词参数
-2. `manager.rs::LanguageManager::list_versions` - 根据语言类型创建对应安装器
-3. `language/python.rs::PythonInstaller::list_versions` 或 `language/go.rs::GoInstaller::list_versions` - 获取所有可用版本并过滤
-4. 返回 `PageResult` 结构（包含总数和分页列表）
+后端命令实现在 `src-tauri/src/commands.rs`，通过 `LanguageManager`（位于 `src-tauri/src/core/manager.rs`）分派到具体的语言安装器。
 
-### 安装版本（带进度推送）
+### 语言扩展架构
 
-**前端调用**:
-```typescript
-import { safeInvoke } from '@/api/tauri';
+新增语言需要实现 `LanguageInstaller` trait（定义在 `src-tauri/src/core/language/mod.rs`）：
 
-await safeInvoke('install', {
-  language: 'python',  // 或 'go'
-  version: '3.9.7'
-});
-```
-
-**进度监听**:
-```typescript
-import { listen } from '@tauri-apps/api/event';
-
-// 监听下载进度
-const progressListener = listen<{
-  language: string;
-  version: string;
-  current: number;
-  total: number;
-  percentage: number;
-}>('download-progress', (event) => {
-  const { language, version, percentage } = event.payload;
-  // 更新 UI 显示下载进度
-  // 前端使用 200ms 节流优化，避免频繁渲染
-});
-
-// 监听下载完成
-const completeListener = listen<{
-  language: string;
-  version: string;
-  path: string;
-}>('download-complete', (event) => {
-  // 处理下载完成
-});
-
-// 监听下载失败
-const errorListener = listen<{
-  language: string;
-  version: string;
-  message: string;
-}>('download-error', (event) => {
-  // 处理下载失败
-});
-```
-
-**后端实现**:
-1. `commands.rs::install` - 接收安装请求，注入 AppHandle 和 Window
-2. `config.rs::get_download_path` - 获取下载路径（从配置或默认值）
-3. `installers/downloader.rs::download_with_progress` - 下载文件并推送进度
-4. `installers/extract.rs` - 根据文件类型解压（zip 或 tar.gz）
-5. 进度优化: 前端使用 200ms 节流，后端发送 download-complete/download-error 事件
-
-### 激活/停用版本
-
-**前端调用**:
-```typescript
-import { safeInvoke } from '@/api/tauri';
-
-// 激活版本
-await safeInvoke('activate', {
-  language: 'python',  // 或 'go'
-  version: '3.9.7'
-});
-
-// 停用版本
-await safeInvoke('deactivate', {
-  language: 'python',  // 或 'go'
-  version: '3.9.7'
-});
-```
-
-**后端实现**:
-1. `commands.rs::activate` 或 `deactivate` - 接收请求
-2. `manager.rs::LanguageManager::activate` 或 `deactivate` - 调用对应安装器
-3. `language/python.rs` 或 `language/go.rs` - 更新 current 文件或符号链接
-4. 触发 Shim 重新安装（如果需要）
-
-### 卸载版本
-
-**前端调用**:
-```typescript
-import { safeInvoke } from '@/api/tauri';
-
-await safeInvoke('uninstall', {
-  language: 'python',  // 或 'go'
-  version: '3.9.7'
-});
-```
-
-**后端实现**:
-1. `commands.rs::uninstall` - 接收请求
-2. `manager.rs::LanguageManager::uninstall` - 调用对应安装器
-3. `language/python.rs` 或 `language/go.rs` - 删除版本目录
-4. `utils/config.rs::del_language` - 通用删除逻辑
-
-### 配置管理
-
-**前端设置页面** (`src/features/version-manager/pages/Settings/index.tsx`):
-```typescript
-import { LazyStore } from '@tauri-apps/plugin-store';
-
-const store = new LazyStore('.settings.json');
-
-// 读取配置
-const basePath = await store.get<string>('base_path');
-const downloadPath = await store.get<string>('download_path');
-const versionsPath = await store.get<string>('versions_path');
-const autoActivate = await store.get<boolean>('autoActivate');
-
-// 保存配置
-await store.set('base_path', 'd:\\lvm');
-await store.set('download_path', 'd:\\lvm\\download');
-await store.set('versions_path', 'd:\\lvm\\versions');
-await store.set('autoActivate', true);
-await store.save(); // 持久化到硬盘
-```
-
-**批量获取配置**:
-```typescript
-import { safeInvoke } from '@/api/tauri';
-
-const config = await safeInvoke('get_config_values', {
-  keys: ['base_path', 'download_path', 'versions_path', 'autoActivate']
-});
-```
-
-**更新配置**:
-```typescript
-import { safeInvoke } from '@/api/tauri';
-
-await safeInvoke('update_configs', {
-  autoActivate: true,
-  downloadPath: 'd:\\lvm\\download',
-  versionsPath: 'd:\\lvm\\versions'
-});
-```
-
-**后端配置读取** (`src-tauri/src/core/utils/config.rs`):
 ```rust
-pub fn get_download_path(app: &AppHandle) -> PathBuf {
-    let base = get_base_path(app);
-    let download_dir = base.join("download");
-
-    // 自动创建下载目录
-    if !download_dir.exists() {
-        let _ = std::fs::create_dir_all(&download_dir);
-    }
-
-    download_dir
-}
-
-pub fn get_versions_path(app: &AppHandle) -> PathBuf {
-    let base = get_base_path(app);
-    let versions_dir = base.join("versions");
-
-    if !versions_dir.exists() {
-        let _ = std::fs::create_dir_all(&versions_dir);
-    }
-
-    versions_dir
+#[async_trait]
+pub trait LanguageInstaller {
+    async fn list_versions(&self) -> Result<Vec<String>, String>;
+    async fn list_installed(&self) -> Result<Vec<String>, String>;
+    async fn current(&self) -> Result<Option<String>, String>;
+    async fn install(&self, window: tauri::Window<Wry>, version: &str, save_path: &str) -> Result<(), String>;
+    async fn activate(&self, version: &str) -> Result<(), String>;
+    async fn deactivate(&self, version: &str) -> Result<(), String>;
+    async fn uninstall(&self, version: &str) -> Result<(), String>;
+    fn get_download_url(&self, version: &str) -> Result<String, String>;
 }
 ```
 
-### Mock 模式实现
+已有实现位于 `src-tauri/src/core/language/python.rs` 和 `go.rs`。Manager 模式根据语言类型将命令路由到对应的安装器。
 
-**环境配置** (`src/core/config/env.ts`):
-```typescript
-export const API_MODE = (import.meta.env.VITE_API_MODE as 'mock' | 'tauri') || 'tauri';
-export const isMock = API_MODE === 'mock';
-```
+### 下载进度系统
 
-**Mock 调用** (`src/api/tauri.ts`):
-```typescript
-import { isMock } from '@/core/config/env';
-import { mockHandlers } from '@/mock/handlers';
-import { mockResponse } from '@/mock/util';
+下载过程中 Rust 向前端发送进度事件：
+- `download-progress` - 下载进度（前端 200ms 节流）
+- `download-complete` - 安装成功完成
+- `download-error` - 安装失败
 
-export async function safeInvoke<T>(
-  command: CommandEnum | InstallStatusEnum,
-  args?: InvokeArgs,
-): Promise<T> {
-  if (isMock && command in mockHandlers) {
-    const handler = mockHandlers[command as keyof typeof mockHandlers];
-    return handler ? (mockResponse(handler()) as Promise<T>) : (undefined as T);
-  }
+`useDownload` Hook（位于 `src/hooks/useDownload.ts`）管理任务状态。
 
-  return !isTauri ? Promise.resolve(undefined as T) : tauriCore.invoke<T>(command, args);
-}
-```
+### Mock 模式
 
-### 下载任务管理 Hook
+设置 `VITE_API_MODE=mock` 可使用 Mock 数据代替 Tauri 后端。Mock 处理器定义在 `src/mock/handlers.ts`。用于不启动 Rust 后端时的前端开发。
 
-**自定义 Hook** (`src/hooks/useDownload.ts`):
-```typescript
-import { useDownload } from '@/hooks/useDownload';
+## 代码规范
 
-function DownloadCenter() {
-  const { tasks } = useDownload();
+### TypeScript/React
 
-  // tasks: 下载任务列表
-}
-```
+- **导入顺序**：builtin → external → internal (@/) → parent → sibling → index（ESLint 强制）
+- **未使用导入**：禁止（error 级别）
+- **Prettier 配置**：100 字符宽度、2 空格缩进、单引号（JSX 双引号）、尾随逗号（ES5 风格）
+- **翻译 key**：使用 snake_case，位于 `src/features/i18n/locales/`
 
-**功能特性**:
-- 自动监听 `download-progress` 事件（带 200ms 节流优化）
-- 自动监听 `download-complete` 事件
-- 自动监听 `download-error` 事件
-- 管理多个下载任务状态
-- 支持任务状态追踪（downloading/success/error）
-- 自动清理已完成任务
+### Rust
 
-**DownloadTask 接口**:
-```typescript
-interface DownloadTask {
-  language: string;
-  version: string;
-  percentage: number;
-  status: DownloadStatusEnum;  // SUCCESS | ERROR | DOWNLOADING
-}
-```
+- 异步操作使用 `async/await`
+- 错误处理：返回 `Result<T, String>`
+- 故意未使用的代码标记 `#[allow(dead_code)]`
 
-### 数据流
+## 关键文件参考
 
-**安装流程**:
-```
-用户点击安装 → React 组件 → safeInvoke('install') → Tauri Command → Rust Manager → Installer
-  ↓
-下载文件 → 进度推送（download-progress） → useDownload Hook → 更新 UI
-  ↓
-解压文件（zip/tar.gz） → 安装完成 → 事件推送（download-complete） → 更新 UI
-  ↓
-（可选）自动激活 → 更新 current 文件 → Shim 重新安装
-```
+| 用途 | 路径 |
+|------|------|
+| Tauri 命令 | `src-tauri/src/commands.rs` |
+| 语言 Trait | `src-tauri/src/core/language/mod.rs` |
+| 语言管理器 | `src-tauri/src/core/manager.rs` |
+| API 客户端 | `src/api/tauri.ts` |
+| 下载 Hook | `src/hooks/useDownload.ts` |
+| 共享表格组件 | `src/shared/components/VersionTable.tsx` |
+| 国际化配置 | `src/features/i18n/` |
+| Mock 处理器 | `src/mock/handlers.ts` |
 
-**激活流程**:
-```
-用户点击激活 → React 组件 → safeInvoke('activate') → Tauri Command → Rust Manager → Installer
-  ↓
-更新 current 文件 → Shim 重新安装 → 返回成功 → 更新 UI
-```
+## 添加新语言步骤
 
-**停用流程**:
-```
-用户点击停用 → React 组件 → safeInvoke('deactivate') → Tauri Command → Rust Manager → Installer
-  ↓
-清空 current 文件 → Shim 重新安装 → 返回成功 → 更新 UI
-```
-
-**卸载流程**:
-```
-用户点击卸载 → React 组件 → safeInvoke('uninstall') → Tauri Command → Rust Manager → Installer
-  ↓
-删除版本目录 → 如果是当前版本则清空 current → Shim 重新安装 → 返回成功 → 更新 UI
-```
-
-**简化的数据流**:
-```
-用户操作 → React 组件 → Custom Hook → Tauri Command → Rust Manager → Installer → 事件推送 → 更新 UI
-```
-
-### 路由配置
-
-**当前路由** (`src/app/routes/index.tsx`):
-- `/` - 重定向到 `/python`
-- `/python` - Python 版本管理页面
-- `/go` - Go 版本管理页面
-- `/java` - Java 版本管理页面（预留）
-- `/js` - JavaScript 版本管理页面（预留）
-- `/rust` - Rust 版本管理页面（预留）
-- `/v` - V 版本管理页面（预留）
-- `/zig` - Zig 版本管理页面（预留）
-- `/settings` - 全局设置页面
-- 错误页面 - 自动错误边界处理
-
-### 扩展新语言支持
-
-要添加对新语言的支持（例如 Java），需要:
-
-1. **后端**:
-   - 在 `src-tauri/src/core/language/` 创建 `java.rs`
-   - 实现 `LanguageInstaller` trait:
-     ```rust
-     pub struct JavaInstaller;
-
-     #[async_trait]
-     impl LanguageInstaller for JavaInstaller {
-         async fn list_versions(&self) -> Result<Vec<String>, String> {
-             // 获取 Java 版本列表
-         }
-         async fn list_installed(&self) -> Result<Vec<String>, String> {
-             // 获取已安装版本
-         }
-         async fn current(&self) -> Result<Option<String>, String> {
-             // 获取当前版本
-         }
-         async fn install(&self, window: tauri::Window<Wry>, version: &str, base_dir: &str, save_path: &str) -> Result<(), String> {
-             // 安装逻辑
-         }
-         async fn activate(&self, version: &str) -> Result<(), String> {
-             // 激活逻辑
-         }
-         async fn deactivate(&self, version: &str) -> Result<(), String> {
-             // 停用逻辑
-         }
-         async fn uninstall(&self, version: &str) -> Result<(), String> {
-             // 卸载逻辑
-         }
-     }
-     ```
-   - 在 `manager.rs` 的 `LanguageManager::new()` 中添加分支
-
-2. **前端**:
-   - 在 `src/core/constants/enum.ts` 的 `LanguageEnum` 中添加语言
-   - 在语言包中添加翻译（`en.json`, `zh.json` 的 `nav.*` 和 `downloader.*`）
-   - 创建对应的管理页面（如 `JavaManagePage`）
-   - 更新路由配置和侧边栏导航
-
-3. **API 封装**:
-   - 复用 `safeInvoke` 函数调用 Tauri 命令
-   - 复用 `VersionTable` 组件展示版本列表
-
-**已实现的语言**:
-- Python (`python.rs`) - 完整支持
-- Go (`go.rs`) - 完整支持
-
-**已预留的路由（待实现）**:
-- Java (`/java`)
-- JavaScript (`/js`)
-- Rust (`/rust`)
-- V (`/v`)
-- Zig (`/zig`)
-
-### Shim 安装
-
-**作用**: 在应用启动时自动安装语言版本的快捷方式（Shim），使用户可以在命令行中直接调用不同版本的编程语言。
-
-**实现位置**: `src-tauri/src/lib.rs::init_shims()`
-
-**实现细节**:
-- 使用本地 `shim` crate（位于 `shim/` 目录）
-- 在 Tauri 应用的 `setup` 钩子中调用
-- 根据当前激活的语言版本自动更新 shim 链接
-- 支持多语言版本的快速切换
-
----
-
-## 常见问题
-
-### Q: 开发服务器启动失败，提示端口 1420 被占用?
-A: 检查是否有其他进程占用该端口，或修改 `vite.config.ts` 中的端口配置。
-
-### Q: Tauri 命令调用失败?
-A: 确保:
-1. 后端命令已在 `lib.rs` 中注册
-2. 前端调用时参数类型匹配
-3. Rust 代码已重新编译
-
-### Q: 国际化切换不生效?
-A: 检查:
-1. 语言文件是否存在于 `src/features/i18n/locales/`
-2. 是否在组件中正确使用 `useTranslation` hook
-3. 是否在 `main.tsx` 中初始化了 i18n
-4. 翻译 key 是否使用 snake_case 格式
-
-### Q: TypeScript 类型检查报错?
-A: 运行 `bun run lint:fix` 尝试自动修复，或检查类型定义是否完整。
-
-### Q: 下载进度不更新?
-A: 检查:
-1. 前端是否正确监听 `download-progress` 事件
-2. 后端是否正确使用 `window.emit` 发送事件
-3. 进度推送是否达到 1% 的变化阈值
-
-### Q: 配置保存后不生效?
-A: 检查:
-1. 是否调用了 `store.save()` 持久化配置
-2. 后端是否正确从 store 读取配置
-3. 下载路径是否有写入权限
-
-### Q: 搜索功能不工作?
-A: 检查:
-1. 前端是否正确传递 `keyWord` 参数
-2. 后端是否实现了搜索过滤逻辑
-3. 搜索关键词格式是否正确
-
-### Q: 如何使用 Mock 模式进行开发?
-A:
-1. 使用 `bun run dev:mock` 启动开发服务器
-2. 在 `.env.mock` 文件中配置 `VITE_API_MODE=mock`
-3. Mock 数据定义在 `src/mock/` 目录下
-4. 可通过修改 `mock/util.ts` 中的延迟参数调整响应速度
-
-### Q: Mock 模式下如何添加新的 Mock 数据?
-A:
-1. 在 `src/mock/` 目录下创建对应的数据文件（如 `config.ts`）
-2. 在 `src/mock/handlers.ts` 中添加处理器映射
-3. 使用 `mockResponse()` 包装返回数据以支持延迟模拟
-
-### Q: Shim 安装失败怎么办?
-A: 检查:
-1. 应用是否有足够的权限创建快捷方式
-2. 检查 `shim/` 目录中的实现是否正确
-3. 查看控制台日志了解详细错误信息
-4. 确保 Tauri 应用的 setup 钩子正确调用
-
-### Q: 如何启用自动激活功能?
-A:
-1. 在设置页面中勾选"自动激活"选项
-2. 或通过 API 调用: `update_configs({ autoActivate: true })`
-3. 启用后，新安装的版本会自动成为当前激活版本
-
-### Q: 为什么下载进度更新很慢?
-A: 这是正常的优化行为：
-1. 前端使用 200ms 节流，避免频繁渲染
-2. 后端仍然实时更新下载进度
-3. UI 只在每 200ms 间隔更新一次，提升性能
-
-### Q: 支持哪些压缩格式?
-A: 当前支持:
-- `.zip` - 使用 `zip` crate 解压
-- `.tar.gz` - 使用 `tar` 和 `flate2` crate 解压
-- 安装器会自动根据文件扩展名选择正确的解压方式
-
----
-
-## 项目特定配置
-
-### TypeScript 配置 (`tsconfig.json`)
-- 目标: ES2020
-- 模块系统: ESNext
-- 严格模式: 启用
-- 路径别名: `@/` → `src/`
-- JSX: react-jsx
-
-### Vite 配置 (`vite.config.ts`)
-- 插件: React
-- 开发服务器: 端口 1420，严格端口模式
-- HMR: WebSocket 连接到 1421
-- 忽略监视: `src-tauri` 目录
-
-### Tauri 配置 (`tauri.conf.json`)
-- 产品名称: lvm
-- 标识符: com.gavinhaydy.lvm
-- 窗口大小: 800x600
-- 用户代理: lvm
-- 开发命令前: `bun run dev`
-- 构建命令前: `bun run build`
-
-### Tauri 依赖 (`src-tauri/Cargo.toml`)
-- **核心依赖**: tauri, tauri-plugin-opener, serde, serde_json
-- **异步运行时**: tokio (full features)
-- **HTTP 客户端**: reqwest (json, stream features)
-- **持久化存储**: tauri-plugin-store
-- **解压工具**: zip, flate2, tar
-- **工具库**: once_cell, async-trait, regex, futures-util, dirs
-- **本地 crate**: shim（用于版本快捷方式管理）
-
-### Tauri Store Plugin 配置
-- **用途**: 持久化存储用户配置（如 base_path, download_path）
-- **配置文件**: `.settings.json`（前端） / `.settings.dat`（后端）
-- **初始化**: 在 `lib.rs` 中通过 `tauri_plugin_store::Builder::new().build()` 注册
-- **使用方式**:
-  - 前端: `LazyStore` 类
-  - 后端: `app.get_store()` 方法
-
-### ESLint 配置
-- **配置文件**: `eslint.config.js`
-- **全局忽略**: `node_modules/**`, `dist/**`, `build/**`, `target/**`, `src-tauri/target/**`
-- **文件范围**: `src/**/*.{ts,tsx}`
-- **特性**: 自动修复、未使用导入检测、导入顺序强制
-
----
-
-## 关键组件说明
-
-### DownloadCenter 组件 (`src/features/version-manager/components/DownloadCenter/index.tsx`)
-**功能**: 下载管理中心抽屉组件
-**特性**:
-- 使用 Ant Design Drawer 组件
-- 实时显示下载任务列表
-- 显示下载进度条和状态标签
-- 支持三种状态：downloading、success、error
-- 国际化支持（snake_case keys）
-
-**Props 接口**:
-```typescript
-interface DownloadCenterProps {
-  onClose: () => void;    // 关闭抽屉回调
-  visible: boolean;        // 抽屉可见状态
-}
-```
-
-### VersionTable 组件 (`src/shared/components/VersionTable.tsx`)
-**功能**: 统一的版本表格展示组件
-**特性**:
-- 内置搜索框，支持关键词过滤
-- 展示版本、安装状态、使用状态
-- 支持 Install/Uninstall 和 Use 操作
-- 内置分页功能（支持页大小选择: 10, 20, 50）
-- 响应式设计，支持横向滚动
-- 国际化支持（snake_case keys）
-
-**Props 接口**:
-```typescript
-interface VersionTableProps {
-  data: VersionResult;        // 版本数据
-  loading?: boolean;          // 加载状态
-  onSearch?: (value: string) => void;  // 搜索回调
-  onInstallToggle?: (record: VersionItem) => void;  // 安装/卸载回调
-  onUseToggle?: (record: VersionItem) => void;      // 切换版本回调
-}
-```
-
-### useDownload Hook (`src/hooks/useDownload.ts`)
-**功能**: 管理下载任务和进度
-**特性**:
-- 自动监听下载进度事件（带 200ms 节流）
-- 自动监听下载完成和失败事件
-- 管理多个并发下载任务
-- 提供任务状态追踪
-
-**返回值**:
-```typescript
-{
-  tasks: DownloadTask[];      // 下载任务列表
-}
-```
-
-### safeInvoke 函数 (`src/api/tauri.ts`)
-**功能**: 封装 Tauri invoke 调用，提供统一的错误处理和 Mock 支持
-**用途**:
-- 简化 Tauri 命令调用
-- 统一处理类型转换和错误
-- 支持 Mock 模式切换
-- 自动检测 Tauri 环境
-
-### keysToCamel 工具函数 (`src/shared/utils/common.ts`)
-**功能**: 将 snake_case 键名转换为 camelCase
-**用途**: 处理后端返回的 snake_case 数据，转换为前端习惯的 camelCase 格式
-**示例**:
-```typescript
-const data = { install_status: true, use_status: false };
-const camelData = keysToCamel(data);
-// 结果: { installStatus: true, useStatus: false }
-```
-
----
-
-## 贡献指南
-
-1. 确保所有代码通过 linting: `bun run lint`
-2. 格式化代码: `bun run format`
-3. 遵循既定的代码风格和架构模式
-4. 提交前进行自测
-5. 编写清晰的提交信息
-6. 新增功能需要更新相关文档和类型定义
-7. 添加 Mock 数据时，确保与真实 API 返回结构一致
-
----
-
-## 相关资源
-
-- [Tauri 官方文档](https://tauri.app/)
-- [Tauri Store Plugin](https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/store)
-- [React 官方文档](https://react.dev/)
-- [Ant Design 文档](https://ant.design/)
-- [Redux Toolkit 文档](https://redux-toolkit.js.org/)
-- [i18next 文档](https://www.i18next.com/)
-- [Rust 官方文档](https://www.rust-lang.org/)
-- [Vite 官方文档](https://vitejs.dev/)
+1. **后端**：在 `src-tauri/src/core/language/{lang}.rs` 实现 `LanguageInstaller`
+2. **后端**：在 `manager.rs` 的 `LanguageManager::new()` 中添加语言分支
+3. **前端**：在 `src/core/constants/enum.ts` 的 `LangEnum` 中添加语言
+4. **前端**：在 `en.json` 和 `zh.json` 中添加翻译
+5. **前端**：创建页面组件并在 `src/app/routes/index.tsx` 添加路由

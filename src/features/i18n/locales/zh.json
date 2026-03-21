@@ -6,6 +6,8 @@
     "go": "Go",
     "java": "Java",
     "js": "JavaScript",
+    "node": "Node.js",
+    "deno": "Deno",
     "python": "Python",
     "rust": "Rust",
     "v": "VLang",

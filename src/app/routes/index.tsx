@@ -2,9 +2,8 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 
 import { BasicLayout } from '@/app/layouts/BasicLayout';
-import { GoManagePage } from '@/features/version-manager/pages/GoManagePage';
-import { PythonManagePage } from '@/features/version-manager/pages/PythonManagePage';
-import { Settings } from '@/features/version-manager/pages/Settings';
+import { LanguageEnum } from '@/core/constants/enum';
+import { LanguageManagePage, Settings } from '@/features/version-manager/pages';
 import { ErrorPage } from '@/pages/error';
 
 interface RouteMeta {
@@ -31,7 +30,7 @@ export const routes: AppRouteObject[] = [
       },
       {
         path: 'python',
-        element: <PythonManagePage />,
+        element: <LanguageManagePage language={LanguageEnum.PYTHON} />,
         meta: {
           label: 'nav.python',
           icon: 'icon-python',
@@ -47,15 +46,32 @@ export const routes: AppRouteObject[] = [
       },
       {
         path: 'js',
-        element: <div>js</div>,
         meta: {
           label: 'nav.js',
           icon: 'icon-JavaScript',
         },
+        children: [
+          {
+            path: 'node',
+            element: <LanguageManagePage language={LanguageEnum.NODE} />,
+            meta: {
+              label: 'nav.node',
+              icon: 'icon-JavaScript',
+            },
+          },
+          {
+            path: 'deno',
+            element: <div>deno</div>,
+            meta: {
+              label: 'nav.deno',
+              icon: 'icon-JavaScript',
+            },
+          },
+        ],
       },
       {
         path: 'go',
-        element: <GoManagePage />,
+        element: <LanguageManagePage language={LanguageEnum.GO} />,
         meta: {
           label: 'nav.go',
           icon: 'icon-golang',

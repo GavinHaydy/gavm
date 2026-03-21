@@ -1,9 +1,15 @@
 import { mockConfig } from './config';
-import { mockVersions } from './verison';
+import { mockNodeVersions, mockVersions } from './verison';
 
-import { CommandEnum } from '@/core/constants/enum';
+import { CommandEnum, LanguageEnum } from '@/core/constants/enum';
+import { SearchPayload } from '@/core/types/common';
 
 export const mockHandlers = {
   [CommandEnum.GET_CONFIG_VALUES]: () => mockConfig,
-  [CommandEnum.LIST_VERSIONS]: () => mockVersions,
+  [CommandEnum.LIST_VERSIONS]: (args?: SearchPayload) => {
+    if (args?.language === LanguageEnum.NODE) {
+      return mockNodeVersions;
+    }
+    return mockVersions;
+  },
 };

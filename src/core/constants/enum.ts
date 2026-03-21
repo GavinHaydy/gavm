@@ -25,6 +25,7 @@ export enum InstallStatusEnum {
 export enum LanguageEnum {
   PYTHON = 'python',
   GO = 'go',
+  NODE = 'node',
 }
 
 export enum DownloadStatusEnum {
