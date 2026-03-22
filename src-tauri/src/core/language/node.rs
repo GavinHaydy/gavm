@@ -7,10 +7,8 @@ use crate::core::utils::config::{del_language, versions_list};
 use async_trait::async_trait;
 use lvm_core::config::get::{get_config_bool, get_language_current_version};
 use lvm_core::enums::path::EPath;
-use lvm_core::files::get::get_dirs;
 use lvm_core::path::get::current_path;
 use std::fs;
-use std::io::ErrorKind;
 use std::path::PathBuf;
 use tauri::Wry;
 
@@ -54,18 +52,6 @@ impl NodeInstaller {
             "unknown".to_string()
         }
     }
-
-    fn name(&self) -> &'static str {
-        "node"
-    }
-
-    fn get_base_dir(&self) -> PathBuf {
-        let path = EPath::Version.path().join(self.name());
-        if !path.exists() {
-            fs::create_dir_all(&path).expect("create dirs err");
-        }
-        path
-    }
 }
 #[async_trait]
 impl LanguageInstaller for NodeInstaller {
@@ -73,19 +59,6 @@ impl LanguageInstaller for NodeInstaller {
         let versions = versions_list("node", fetch_versions_node).await?;
 
         Ok(versions)
-    }
-    async fn list_installed(&self) -> Result<Vec<String>, String> {
-        let dir = self.get_base_dir();
-        get_dirs(&dir).map_err(|e| e.to_string())
-    }
-    async fn current(&self) -> Result<Option<String>, String> {
-        let node_current_path = self.get_base_dir().join("current");
-
-        match fs::read_to_string(node_current_path) {
-            Ok(v) => Ok(Some(v.trim().to_string())),
-            Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
-            Err(e) => Err(e.to_string()),
-        }
     }
 
     async fn install(
@@ -146,13 +119,10 @@ impl LanguageInstaller for NodeInstaller {
         Ok(())
     }
 
-    async fn activate(&self, version: &str) -> Result<(), String> {
-        let current_file = current_path(self.name());
-
-        fs::write(current_file, version).map_err(|e| e.to_string())?;
-
-        Ok(())
+    fn name(&self) -> &str {
+        "node"
     }
+
     async fn deactivate(&self, version: &str) -> Result<(), String> {
         let current_version = get_language_current_version("node").unwrap_or_default();
 
