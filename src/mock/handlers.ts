@@ -7,9 +7,22 @@ import { SearchPayload } from '@/core/types/common';
 export const mockHandlers = {
   [CommandEnum.GET_CONFIG_VALUES]: () => mockConfig,
   [CommandEnum.LIST_VERSIONS]: (args?: SearchPayload) => {
-    if (args?.language === LanguageEnum.NODE) {
-      return mockNodeVersions;
+    const sourceData = args?.language === LanguageEnum.NODE ? mockNodeVersions : mockVersions;
+
+    // 如果有过滤条件，进行过滤 (0: all, 1: installed, 2: uninstalled)
+    if (args?.installStatus && args.installStatus !== 0) {
+      const targetStatus = args.installStatus === 1;
+      const filteredList = sourceData.data.list.filter(item => item.installStatus === targetStatus);
+      return {
+        ...sourceData,
+        data: {
+          ...sourceData.data,
+          list: filteredList,
+          total: filteredList.length,
+        },
+      };
     }
-    return mockVersions;
+
+    return sourceData;
   },
 };

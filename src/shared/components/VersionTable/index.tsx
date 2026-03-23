@@ -1,17 +1,19 @@
 import type { TableProps } from 'antd';
-import { Table, Input, Button } from 'antd';
+import { Button, Table } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { CommandEnum, InstallStatusEnum } from '@/core/constants/enum';
-import { VersionItem, VersionResult } from '@/core/types/common';
+import { SearchForm } from './components/SearchForm';
 
 import './index.css';
+import { CommandEnum, InstallStatusEnum, InstallStatusFilterEnum } from '@/core/constants/enum';
+import type { SearchFormValues, VersionItem, VersionResult } from '@/core/types/common';
 
 interface VersionTableProps {
   data: VersionResult;
   loading?: boolean;
-  onSearch?: (value: string) => void;
+  onSearch?: (values: SearchFormValues) => void;
+  onReset?: () => void;
   handlePageChange: (page: number, pageSize: number) => void;
   handleVersionAction?: (
     command: CommandEnum | InstallStatusEnum,
@@ -23,6 +25,7 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   data,
   loading,
   onSearch,
+  onReset,
   handleVersionAction,
   handlePageChange,
 }) => {
@@ -80,15 +83,14 @@ export const VersionTable: React.FC<VersionTableProps> = ({
   return (
     <>
       <div style={{ marginBottom: 12, marginTop: 12, textAlign: 'center' }}>
-        <Input.Search
-          placeholder={t('search.placeholder')}
-          enterButton={t('search.button')}
-          onSearch={onSearch}
-          style={{
-            marginBottom: 12,
-            width: '100%',
-            maxWidth: 400,
+        <SearchForm
+          onSearch={onSearch || (() => {})}
+          onReset={onReset}
+          initialValues={{
+            keyword: '',
+            installStatus: InstallStatusFilterEnum.ALL,
           }}
+          loading={loading}
         />
       </div>
 
