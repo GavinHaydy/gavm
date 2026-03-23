@@ -3,9 +3,9 @@ use crate::core::common::error::io_err;
 use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::{untar_file, unzip_file};
 use crate::core::language::LanguageInstaller;
-use crate::core::utils::config::{del_language, versions_list};
+use crate::core::utils::config::versions_list;
 use async_trait::async_trait;
-use lvm_core::config::get::{get_config_bool, get_language_current_version};
+use lvm_core::config::get::get_config_bool;
 use lvm_core::enums::path::EPath;
 use lvm_core::path::get::current_path;
 use std::fs;
@@ -55,10 +55,12 @@ impl NodeInstaller {
 }
 #[async_trait]
 impl LanguageInstaller for NodeInstaller {
-    async fn list_versions(&self) -> Result<Vec<String>, String> {
-        let versions = versions_list("node", fetch_versions_node).await?;
+    fn name(&self) -> &str {
+        "node"
+    }
 
-        Ok(versions)
+    async fn list_versions(&self) -> Result<Vec<String>, String> {
+        versions_list("node", fetch_versions_node).await
     }
 
     async fn install(
@@ -119,28 +121,6 @@ impl LanguageInstaller for NodeInstaller {
         Ok(())
     }
 
-    fn name(&self) -> &str {
-        "node"
-    }
-
-    async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current_version = get_language_current_version("node").unwrap_or_default();
-
-        let current_file = current_path(self.name());
-
-        if current_version != version {
-            return Err(format!("The currently active version is not {}", version));
-        }
-
-        fs::write(current_file, "").map_err(|e| e.to_string())?;
-
-        Ok(())
-    }
-    async fn uninstall(&self, version: &str) -> Result<(), String> {
-        del_language("node", version)?;
-
-        Ok(())
-    }
     fn get_download_url(&self, version: &str) -> Result<String, String> {
         // let proxy = get_config_bool("proxy", false);
         let platform = self.get_platform();

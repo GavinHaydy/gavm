@@ -1,7 +1,6 @@
-// language/mod.rs
-// Trait definition for all language installers
-
+use crate::core::utils::config::del_language;
 use async_trait::async_trait;
+use lvm_core::config::get::get_language_current_version;
 use lvm_core::enums::path::EPath;
 use lvm_core::files::get::get_dirs;
 use lvm_core::path::get::current_path;
@@ -15,6 +14,7 @@ pub mod python;
 
 #[async_trait]
 pub trait LanguageInstaller {
+    fn name(&self) -> &str;
     async fn list_versions(&self) -> Result<Vec<String>, String>;
     async fn list_installed(&self) -> Result<Vec<String>, String> {
         let dir = self.get_base_dir();
@@ -36,7 +36,6 @@ pub trait LanguageInstaller {
         save_path: &str,
     ) -> Result<(), String>;
 
-    fn name(&self) -> &str;
     fn get_base_dir(&self) -> std::path::PathBuf {
         let path = EPath::Version.path().join(self.name());
         if !path.exists() {
@@ -50,7 +49,23 @@ pub trait LanguageInstaller {
         Ok(())
     }
 
-    async fn deactivate(&self, version: &str) -> Result<(), String>;
-    async fn uninstall(&self, version: &str) -> Result<(), String>;
+    async fn deactivate(&self, version: &str) -> Result<(), String> {
+        let current_version = get_language_current_version(self.name()).unwrap_or_default();
+
+        let current_file = current_path(self.name());
+
+        if current_version != version {
+            return Err(format!("The currently active version is not {}", version));
+        }
+
+        fs::write(current_file, "").map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+    async fn uninstall(&self, version: &str) -> Result<(), String> {
+        del_language(self.name(), version)?;
+
+        Ok(())
+    }
     fn get_download_url(&self, version: &str) -> Result<String, String>;
 }

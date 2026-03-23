@@ -1,14 +1,11 @@
-// python.rs
-// Python installer implementation
-
 use crate::caches::python_cache::*;
 use crate::core::common::error::io_err;
 use crate::core::enums::proxy::EDownload;
 use crate::core::installers::extract::unzip_file;
 use crate::core::language::LanguageInstaller;
-use crate::core::utils::config::{del_language, versions_list};
+use crate::core::utils::config::versions_list;
 use async_trait::async_trait;
-use lvm_core::config::get::{get_config_bool, get_language_current_version};
+use lvm_core::config::get::get_config_bool;
 use lvm_core::enums::path::EPath;
 use lvm_core::path::get::current_path;
 use std::fs;
@@ -63,10 +60,12 @@ impl PythonInstaller {
 
 #[async_trait]
 impl LanguageInstaller for PythonInstaller {
-    async fn list_versions(&self) -> Result<Vec<String>, String> {
-        let versions = versions_list("python", fetch_versions_python).await?;
+    fn name(&self) -> &str {
+        "python"
+    }
 
-        Ok(versions)
+    async fn list_versions(&self) -> Result<Vec<String>, String> {
+        versions_list("python", fetch_versions_python).await
     }
 
     async fn install(
@@ -113,30 +112,6 @@ impl LanguageInstaller for PythonInstaller {
         if !current.exists() || auto_activate {
             let _ = fs::write(current, version).map_err(io_err);
         }
-
-        Ok(())
-    }
-
-    fn name(&self) -> &str {
-        "python"
-    }
-
-    async fn deactivate(&self, version: &str) -> Result<(), String> {
-        let current_version = get_language_current_version(self.name()).unwrap_or_default();
-
-        let current_file = current_path(self.name());
-
-        if current_version != version {
-            return Err(format!("The currently active version is not {}", version));
-        }
-
-        fs::write(current_file, "").map_err(|e| e.to_string())?;
-
-        Ok(())
-    }
-
-    async fn uninstall(&self, version: &str) -> Result<(), String> {
-        del_language("python", version)?;
 
         Ok(())
     }
