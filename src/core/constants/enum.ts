@@ -22,6 +22,13 @@ export enum InstallStatusEnum {
   UNINSTALLED = 'uninstall',
 }
 
+// 0是全部 1已安装 2未安装
+export enum InstallStatusFilterEnum {
+  ALL = 0,
+  INSTALLED = 1,
+  UNINSTALLED = 2,
+}
+
 export enum LanguageEnum {
   PYTHON = 'python',
   GO = 'go',

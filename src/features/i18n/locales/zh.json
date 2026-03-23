@@ -40,7 +40,13 @@
   },
   "search": {
     "placeholder": "输入目标版本号",
-    "button": "搜索"
+    "button": "搜索",
+    "keyword": "版本号",
+    "install_status": "安装状态",
+    "install_status_all": "全部",
+    "install_status_installed": "已安装",
+    "install_status_uninstalled": "未安装",
+    "reset": "重置"
   },
   "settings": {
     "title": "全局路径设置",

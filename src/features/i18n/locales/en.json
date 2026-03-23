@@ -40,7 +40,13 @@
   },
   "search": {
     "placeholder": "Input search version",
-    "button": "Search"
+    "button": "Search",
+    "keyword": "Version",
+    "install_status": "Install Status",
+    "install_status_all": "All",
+    "install_status_installed": "Installed",
+    "install_status_uninstalled": "Not Installed",
+    "reset": "Reset"
   },
   "settings": {
     "title": "Global Path Settings",

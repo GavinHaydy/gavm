@@ -1,0 +1,20 @@
+.search-form {
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  padding: 12px;
+  background-color: white;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.search-form .ant-form-item {
+  margin-bottom: 0;
+}
+
+.search-form .search-form-button-group {
+  display: flex;
+  gap: 8px;
+}
