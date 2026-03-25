@@ -6,6 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tar::Archive;
+use xz2::read::XzDecoder;
 use zip::ZipArchive;
 
 #[allow(dead_code)]
@@ -66,6 +67,31 @@ pub fn untar_file(tar_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String>
 
     fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
 
+    archive.unpack(dest_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn extract_tar(tar_path: &PathBuf, dest_path: &PathBuf) -> Result<(), String> {
+    let file = File::open(tar_path).map_err(|e| e.to_string())?;
+    let reader = BufReader::new(file);
+
+    let file_name = tar_path.to_string_lossy();
+
+    let reader: Box<dyn Read> = if file_name.ends_with(".tar.gz") || file_name.ends_with(".tgz") {
+        Box::new(GzDecoder::new(reader))
+    } else if file_name.ends_with(".tar.xz") {
+        Box::new(XzDecoder::new(reader))
+    } else if file_name.ends_with(".tar") {
+        Box::new(reader)
+    } else {
+        return Err("Unsupported archive format".into());
+    };
+
+    let mut archive = Archive::new(reader);
+
+    fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
     archive.unpack(dest_path).map_err(|e| e.to_string())?;
 
     Ok(())
