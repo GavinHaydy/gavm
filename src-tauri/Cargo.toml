@@ -35,3 +35,4 @@ zip = "8.1.0"
 flate2 = "1.0"
 tar = "0.4"
 lvm-core = { path = "../lvm-core"}
+xz2 = "0.1"
