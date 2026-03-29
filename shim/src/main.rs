@@ -20,6 +20,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .join(&exe_name)
             .join("bin")
             .join(&exe_name)
+    } else if exe_name.starts_with("n") {
+        EPath::Version
+            .path()
+            .join("node")
+            .join(&version)
+            .join(format!("node-v{}-linux-x64", &version))
+            .join("bin")
+            .join(&exe_name)
     } else {
         EPath::Version
             .path()
@@ -27,6 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .join(&version)
             .join(&exe_name)
     };
+
     #[cfg(target_os = "windows")]
     real_exe.set_extension("exe");
 

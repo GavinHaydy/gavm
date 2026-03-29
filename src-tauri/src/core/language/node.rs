@@ -1,7 +1,7 @@
 use crate::core::caches::node_cache::fetch_versions_node;
 use crate::core::common::error::io_err;
 use crate::core::enums::proxy::EDownload;
-use crate::core::installers::extract::{untar_file, unzip_file};
+use crate::core::installers::extract::{extract_tar, unzip_file};
 use crate::core::language::LanguageInstaller;
 use crate::core::utils::config::versions_list;
 use async_trait::async_trait;
@@ -104,7 +104,7 @@ impl LanguageInstaller for NodeInstaller {
                 unzip_file(&dest_path, &extract_path).expect("TODO: unzip Error");
             }
             "tar.gz" => {
-                untar_file(&dest_path, &extract_path).expect("TODO: untar Error");
+                extract_tar(&dest_path, &extract_path).expect("TODO: untar Error");
             }
             _ => {
                 return Err("Unsupported file format".into());
@@ -122,7 +122,7 @@ impl LanguageInstaller for NodeInstaller {
     }
 
     fn get_download_url(&self, version: &str) -> Result<String, String> {
-        // let proxy = get_config_bool("proxy", false);
+        let proxy = get_config_bool("proxy", false);
         let platform = self.get_platform();
         let arch = self.get_arch();
 
@@ -144,16 +144,22 @@ impl LanguageInstaller for NodeInstaller {
             "windows" => "zip",
             _ => "tar.gz",
         };
+        let domain = if proxy {
+            EDownload::NodeDownloadProxy
+        } else {
+            EDownload::Node
+        };
 
         // 构建下载 URL
         let url = format!(
-            "{domain}dist/v{v}/node-v{v}-{platform}-{arch}.{e}",
-            domain = EDownload::Node,
+            "{d}v{v}/node-v{v}-{platform}-{arch}.{e}",
+            d = domain,
             v = version,
             platform = node_platform,
             arch = node_arch,
             e = extension,
         );
+        println!("url: {}", url);
 
         Ok(url)
     }

@@ -8,6 +8,7 @@ pub enum EDownload {
     GoDownLoadProxy,
     Node,
     NodeProxy,
+    NodeDownloadProxy,
 }
 
 impl fmt::Display for EDownload {
@@ -18,8 +19,9 @@ impl fmt::Display for EDownload {
             EDownload::Go => "https://go.dev/dl/",
             EDownload::GoListProxy => "https://golang.google.cn/dl/",
             EDownload::GoDownLoadProxy => "https://dl.google.com/go/",
-            EDownload::Node => "https://nodejs.org/",
-            EDownload::NodeProxy => "https://node.org.cn/",
+            EDownload::Node => "https://nodejs.org/dist/",
+            EDownload::NodeProxy => "https://node.org.cn/dist/",
+            EDownload::NodeDownloadProxy => "https://mirrors.huaweicloud.com/nodejs/",
         };
         write!(f, "{}", s)
     }
